@@ -1,0 +1,46 @@
+[tool.poetry]
+name = "lmrun"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "~3.11"  # SkyPilot requirement
+pulumi = "^3.142.0"
+pulumi-aws-native = "^1.13.0"
+skypilot = {extras = ["aws"], version = "^0.7.0"}
+boto3 = "^1.35.80"
+pulumi-aws = "^6.65.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.10.0"
+flake8 = "^7.1.1"
+# Downgrade pylint: 3.3.3 depends on colorama (>=0.4.5)
+# -> skypilot[aws] (0.7.0) depends on colorama (<0.4.5)
+pylint = "^2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pylint.messages-control]
+# errors are deactivated when unreliable to keep code free of annotations
+# -> when SkyPilot bumps colorama dependency, pylint 3 should resolve most
+disable = [
+    # pylint 2 struggles with modules in current directory
+    "import-error", "no-name-in-module",
+    # pylint 2 detects controversial constants that must be capitalized
+    "invalid-name",
+    # pylint 2 mistakenly believes that Module 'os' has no 'environ' member
+    "no-member"
+]
+# Why up to 120 lines in a file?
+# 1) incentivize less code
+# 2) limit scrolling
+# 3) force modularization and hierarchy of abstraction levels:
+#     - clean, semantic source files (what goes where)
+#     - data manipulation lives deeper than business logic
+#     - easier to unit test in lightweight docstrings
+# 4) make code AI friendly:
+#     - targeted context management with source file paths
+#     - efficient token usage
+#     - safer AI refactoring on entire files
+max-module-lines = 120

@@ -1,0 +1,23 @@
+jobs:
+  controller:
+    resources:  # same spec as 'resources' in a task YAML
+      cloud: aws
+      region: us-east-1
+      # default: 4+
+      cpus: 1+  # number of vCPUs, max concurrent spot jobs = 2 * cpus
+      # default: 100
+      disk_size: 25
+
+allowed_clouds:
+  - aws
+  - cloudflare
+
+aws:
+  labels:
+    config: lmrun
+  vpc_name: lmrun
+  security_group_name:
+    - "*": lmrun-ssh
+  remote_identity:
+    - "*": lmrun  # IAM instance profile
+

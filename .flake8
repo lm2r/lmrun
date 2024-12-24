@@ -1,0 +1,5 @@
+# Flake8 doesn't support pyproject.toml
+[flake8]
+# ignore the line length check to leave it to black
+# -> flake8 can still disagree on edge cases when aligning the limit with black
+ignore = E501
