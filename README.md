@@ -14,9 +14,9 @@ Infrastructure as Code (IaC) for AI practitioners
 
 ## Quickstart
 1. Set up your [local environment](#local-environment).
-2. Follow instructions in `cloud_init` to initialize the cloud environment.
-3. Follow instructions in `cluster_mesh` to deploy the cluster mesh.
-4. Pick any other root subfolder to launch a use case or `workspace_compute` if you're new to LMRun. 
+2. Follow instructions in `init` to initialize the cloud environment.
+3. Follow instructions in `mesh` to deploy the cluster mesh.
+4. Pick any other root subfolder to launch a use case or `workspace` if you're new to LMRun. 
 5. Make it yours: change models, tune configuration, add resources, etc..
 
 ## Local Environment

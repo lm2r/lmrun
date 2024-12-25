@@ -15,7 +15,7 @@ VPCs are only deployed in regions where selected accelerators are available. The
 
 ## Deployment
 Prerequisite: first 2 steps of the [Quickstart](/README.md#quickstart)
-1. activate the environment in `..` (repo root) with `poetry shell` and come back to this subfolder `cd cluster_mesh`
+1. activate the environment in `..` (repo root) with `poetry shell` and come back to this subfolder `cd mesh`
 2. log in to Pulumi admin backend: first, export your account ID or retrieve it like below
 ```bash
 export AWS_ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
@@ -44,7 +44,7 @@ QUOTAS_AWS = {
 ### New AWS Regions
 LMRun assigns a network range to at least 30 regions. To add a new one that AWS may have just launched:
 1. Add an entry at the bottom of the CIDR block allocation in `aws/network/cidr_blocks.py`.
-2. Most likely, the new region will be available by opting-in. To keep a consistent state, we recommend activating it by running `pulumi up` in `cloud_init`, which will automatically fetch all regions before applying the update.
+2. Most likely, the new region will be available by opting-in. To keep a consistent state, we recommend activating it by running `pulumi up` in `init`, which will automatically fetch all regions before applying the update.
 
 New regions may have accelerators available before all resources are supported via Cloud Control API, i.e. they're not production-ready, yet. If the deployment fails for this reason, add the offending region to `ROGUE_REGIONS` in `aws/region/selection.py`.
 

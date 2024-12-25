@@ -4,7 +4,7 @@
 # compiled Python files
 __pycache__/
 
-# local state backend generated in cloud_initialization
+# local state backend created by misconfiguration, except in /init
 .pulumi/
 # initialized stack config, unique to encryption details
 Pulumi.*.yaml
