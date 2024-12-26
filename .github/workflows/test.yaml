@@ -1,0 +1,30 @@
+name: Unit Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          # created in /ci: not too secret but no need to expose account IDs
+          role-to-assume: ${{ secrets.CI_AWS_ROLE }}
+          aws-region: ${{ vars.AWS_DEFAULT_REGION }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install venv
+        run: |
+          pip install poetry
+          poetry install
+      - name: Run Doctest
+        # exclude at least __main__.py to test own source files
+        run: poetry run python -m doctest $(find . -name "*.py" ! -path "*__*__*")

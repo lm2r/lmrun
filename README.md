@@ -22,8 +22,9 @@ Infrastructure as Code (IaC) for AI practitioners
 ## Local Environment
 1. Complete [system configuration](#system-configuration).
 2. Set the last Python version compatible with SkyPilot `poetry env use ~/.pyenv/versions/3.11.*/bin/python` (previously installed in System Configuration).
-3. Create the local environment: `poetry install --with dev`.
-4. Activate it: `poetry shell`.
+3. Optional: if your IDE automatically loads virtual environments like VSCode within projects, run `poetry config virtualenvs.in-project true` so it works out of the box.
+4. Create the local environment: `poetry install --with dev`.
+5. Activate it: `poetry shell`.
 
 ## System Configuration
 These steps prepare the local system to run the environment. We provide guidance *from scratch*.

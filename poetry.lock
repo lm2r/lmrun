@@ -1306,6 +1306,22 @@ pulumi = ">=3.136.0,<4.0.0"
 semver = ">=2.8.1"
 
 [[package]]
+name = "pulumi-github"
+version = "6.4.0"
+description = "A Pulumi package for creating and managing github cloud resources."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pulumi_github-6.4.0-py3-none-any.whl", hash = "sha256:6dfdf1c02c5da61818ae98bd3d252d6fed95fd099131a6715a374ab3bbf25e92"},
+    {file = "pulumi_github-6.4.0.tar.gz", hash = "sha256:a62a6d8c53e022d5b3665849581e61fcaf688206bf84d3c71dba8ff6e02a7310"},
+]
+
+[package.dependencies]
+parver = ">=0.2.1"
+pulumi = ">=3.136.0,<4.0.0"
+semver = ">=2.8.1"
+
+[[package]]
 name = "pyasn1"
 version = "0.6.1"
 description = "Pure-Python implementation of ASN.1 types and DER/BER/CER codecs (X.208)"
@@ -1950,4 +1966,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.11"
-content-hash = "88dc5253fd16c51226e83adcb139052ac50786e490a586e488089deb1f3675ed"
+content-hash = "af9ea16b393e7c68daec9b38e53f9a9a6d5398897560d7a7444d201bbc4ad211"

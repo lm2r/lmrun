@@ -8,3 +8,6 @@ __pycache__/
 .pulumi/
 # initialized stack config, unique to encryption details
 Pulumi.*.yaml
+
+# virtual Python environment
+.venv/

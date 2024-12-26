@@ -17,6 +17,7 @@ flake8 = "^7.1.1"
 # Downgrade pylint: 3.3.3 depends on colorama (>=0.4.5)
 # -> skypilot[aws] (0.7.0) depends on colorama (<0.4.5)
 pylint = "^2"
+pulumi-github = "^6.4.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -31,7 +32,9 @@ disable = [
     # pylint 2 detects controversial constants that must be capitalized
     "invalid-name",
     # pylint 2 mistakenly believes that Module 'os' has no 'environ' member
-    "no-member"
+    "no-member",
+    # flags parts of IAM policies, which should remain complete literals
+    "duplicate-code"
 ]
 # Why up to 120 lines in a file?
 # 1) incentivize less code
