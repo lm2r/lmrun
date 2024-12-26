@@ -8,6 +8,9 @@ on:
     branches:
       - main
 
+permissions:
+      id-token: write   # required to request the JWT
+
 jobs:
   test:
     runs-on: ubuntu-latest
