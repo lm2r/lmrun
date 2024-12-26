@@ -28,6 +28,8 @@ jobs:
         run: |
           pip install poetry
           poetry install
-      - name: Run Doctest
+      - name: Mesh doctests
         # exclude at least __main__.py to test own source files
-        run: poetry run python -m doctest $(find . -name "*.py" ! -path "*__*__*")
+        run: |
+          cd mesh
+          poetry run python -m doctest $(find . -name "*.py" ! -path "*__*__*")
