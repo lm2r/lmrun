@@ -8,7 +8,7 @@ Infrastructure as Code (IaC) for AI practitioners
 - Global network for better availability and cheaper compute
 - Open stack: work with any tool or framework, LMRun runs underneath
 - No data lock-in: free bandwidth thanks to [R2](https://www.cloudflare.com/developer-platform/products/r2/)
-- Deploy on hyperscalers for enterprise-grade integrations and services
+- Deploy on hyperscalers (AWS) for enterprise-grade integrations and services
 
 > LMRun is a great fit when managed services are not
 

@@ -15,13 +15,13 @@ VPCs are only deployed in regions where selected accelerators are available. The
 
 ## Deployment
 Prerequisite: first 2 steps of the [Quickstart](/README.md#quickstart)
-1. activate the environment in `..` (repo root) with `poetry shell` and come back to this subfolder `cd mesh`
+1. `poetry shell` to activate the environment
 2. log in to Pulumi admin backend: first, export your account ID or retrieve it like below
 ```bash
 export AWS_ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
 pulumi login s3://pulumi-admin-$AWS_ACCOUNT
 ```
-3. Optional: initialize the stack if you don't already find a local `Pulumi.lmrun.yaml` in this folder. It should contain an `encryptedKey` field. Run `pulumi stack init lmrun --secrets-provider awskms://alias/pulumi/admin` if the stack has never been deployed or `pulumi config refresh` otherwise.
+3. Optional: initialize the stack if you don't already have a local `Pulumi.lmrun.yaml` in this folder. It should contain an `encryptedKey` field. Run `pulumi stack init lmrun --secrets-provider awskms://alias/pulumi/admin` if the stack has never been deployed or `pulumi config refresh` otherwise.
 4. `pulumi up`
 5. Deal with instance quotas over time. See section below.
 

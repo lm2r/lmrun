@@ -1,7 +1,5 @@
 name: aws
 runtime:
   name: python
-config:
-  aws-native:region: us-east-1
 backend:
   url: file://.

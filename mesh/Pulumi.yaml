@@ -1,5 +1,3 @@
 name: mesh
 runtime:
   name: python
-config:
-  aws-native:region: us-east-1
