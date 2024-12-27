@@ -1,18 +1,18 @@
 """a container for IAM roles attached to EC2 instances"""
 
 import os
+import pulumi
 import pulumi_aws_native as aws_
-
-from constants import SKY_REF
 
 
 def default():
     """default profile set in ~/.sky/config.yaml for SkyPilot VMs"""
     account_id = os.environ["AWS_ACCOUNT"]
+    sky_ref = pulumi.Config().require("skyRef")
 
     role = aws_.iam.Role(
-        SKY_REF,
-        role_name=SKY_REF,
+        sky_ref,
+        role_name=sky_ref,
         assume_role_policy_document={
             "Version": "2012-10-17",
             "Statement": [
@@ -63,12 +63,12 @@ def default():
                         {
                             "Effect": "Allow",
                             "Action": ["iam:GetRole", "iam:PassRole"],
-                            "Resource": [f"arn:aws:iam::{account_id}:role/" + SKY_REF],
+                            "Resource": [f"arn:aws:iam::{account_id}:role/" + sky_ref],
                         },
                         {
                             "Effect": "Allow",
                             "Action": ["iam:GetInstanceProfile"],
-                            "Resource": f"arn:aws:iam::{account_id}:instance-profile/{SKY_REF}",
+                            "Resource": f"arn:aws:iam::{account_id}:instance-profile/{sky_ref}",
                         },
                         {
                             "Effect": "Allow",
@@ -82,14 +82,14 @@ def default():
                         },
                     ],
                 },
-                policy_name=SKY_REF + "SkyPilot",
+                policy_name=sky_ref + "SkyPilot",
             )
         ],
     )
 
     aws_.iam.InstanceProfile(
-        SKY_REF,
-        instance_profile_name=SKY_REF,
+        sky_ref,
+        instance_profile_name=sky_ref,
         # reference role_name from role to establish dependency
         roles=[role.role_name],
     )

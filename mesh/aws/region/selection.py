@@ -1,6 +1,7 @@
 """selection of regions covered by the network of VPCs"""
 
-from constants import VM_AWS
+import pulumi
+
 from aws.region.availability import availability
 
 ROGUE_REGIONS = [
@@ -12,8 +13,10 @@ ROGUE_REGIONS = [
 
 def vm_regions(main_region: str) -> list[str]:
     """return unique regions where at least one VM type is available"""
+    vm_aws = pulumi.Config().require_object("vmAws")
     # list regions per instance type in a dict
-    regions = availability(VM_AWS)
+    regions = availability(vm_aws)
+
     # add the main region: its VPC is required regardless of selected VMs
     deduped_regions = list(set(sum(regions.values(), [main_region])))
 

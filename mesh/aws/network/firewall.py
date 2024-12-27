@@ -1,20 +1,22 @@
 """definitions of open ports"""
 
+import pulumi
 from pulumi import Output, ResourceOptions
 from pulumi_aws_native.ec2 import (
     SecurityGroup,
     SecurityGroupIngress,
     SecurityGroupIngressArgs,
 )
-from constants import SKY_REF
 
 
 def security_groups(region: str, vpc_id: Output, opts: ResourceOptions):
     """SG created in every region and referenced by name in ~/.sky/config.yaml"""
+    sky_ref = pulumi.Config().require("skyRef")
+
     sg = SecurityGroup(
         region + "_ssh",
-        group_name=SKY_REF + "-ssh",
-        group_description=f"default SSH port on {SKY_REF} instances",
+        group_name=sky_ref + "-ssh",
+        group_description=f"default SSH port on {sky_ref} instances",
         security_group_ingress=[
             SecurityGroupIngressArgs(
                 ip_protocol="tcp", cidr_ip="0.0.0.0/0", from_port=22, to_port=22

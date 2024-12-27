@@ -1,3 +1,21 @@
 name: mesh
 runtime:
   name: python
+config:
+  vmAws:
+    type: array
+    description: instance types selecting regional VPCs where they're available 
+    items:
+      type: string
+    # g6.xlarge   -> 1 x L4 GPU: 24 GB, 4 vCPUs, 16 GiB
+    # g6.2xlarge  -> 1 x L4 GPU: 24 GB, 8 vCPUs, 32 GiB
+    # g6.12xlarge -> 4 x L4 GPU: 96 GB, 48 vCPUs, 192 GiB
+    default:
+      - g6.xlarge
+      - g6.2xlarge
+      - g6.12xlarge
+  skyRef:
+    type: string
+    description: name of VPCs, SGs & IAM role targeted by SkyPilot
+    # referenced in sky/config.yaml
+    default: lmrun

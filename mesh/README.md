@@ -8,10 +8,10 @@ It enables service discovery and removes the need to expose public ports or manu
 Copy `sky/config.yaml` to `~/.sky/config.yaml`.
 
 ### Instance Types
-VPCs are only deployed in regions where selected accelerators are available. They are defined by instance types in `constants.py`. 
+VPCs are only deployed in regions where selected accelerators are available. They are defined by instance types in `Pulumi.yaml`. 
 
-1. Edit the `VM_AWS` list to include all supported types in the cluster.
-2. Update the Pulumi stack following the deployment process below everytime `constants.py` is edited.
+1. Edit the `vmAws` list to include all supported types in the cluster.
+2. Update the Pulumi stack following the deployment process below everytime `Pulumi.yaml` is edited.
 
 ## Deployment
 Prerequisite: first 2 steps of the [Quickstart](/README.md#quickstart)
