@@ -6,12 +6,11 @@ resources:
 setup: |
   pip install --upgrade pip
   conda init bash
-  conda create -n jupyter python=3.9 -y
+  conda create -n jupyter python=3.12 -y
   conda activate jupyter
   pip install jupyter
 
 run: |
-  cd ~/sky_workdir
   conda activate jupyter
   nohup jupyter lab &> ./jupyter.log &
   tail -f +1 jupyter.log

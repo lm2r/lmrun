@@ -1,0 +1,45 @@
+name: model-download
+
+resources:
+  # default SkyPilot image runs on Intel (i) architecture
+  instance_type: m7i.large
+  # allocate at least model parameters B x 4 + 16 (root + extra) in GB 
+  disk_size: 144
+
+envs:
+  REPO_HOST: https://huggingface.co/
+  # make the environment variable required (null is the same as empty)
+  REPO: null
+
+file_mounts:
+  /scripts/rclone: setup/rclone
+
+# install git LFS to download & rclone to upload (rsync not recommended)
+# -> apt-get rclone is older than package requirement: v1.59 or greater
+setup: |
+  sudo apt-get update
+  sudo apt install git-lfs
+
+  sudo /scripts/rclone/install.sh
+  /scripts/rclone/config.sh
+
+# DO NOT mount a R2 bucket to download or upload:
+# - cloning into a bucket incurs high latency + could crash FUSE (virtual FS)
+# - download to disk is +3x faster & sequential upload gets 2x bandwidth
+# - SkyPilot doesn't guarantee preservation of bucket file permissions,
+#     e.g. multipart uploads through mount can fail with 'Permission denied'
+#
+# 1. clone on disk
+# 2. reset clone in case the repo was updated after reading the hash
+# 3. delete .git, mostly for duplicate weights in .git/lfs/objects
+# 4. rclone to bucket
+run: |
+  url=${REPO_HOST}${REPO}
+  hash=`git ls-remote $url HEAD | cut -f1`
+  git clone --depth 1 $url $hash
+
+  git -C $hash reset --hard $hash
+
+  rm -rf $hash/.git
+
+  rclone -v copy $hash r2:lmrun/model/$REPO/$hash
