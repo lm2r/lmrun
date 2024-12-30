@@ -23,7 +23,7 @@ Jupyter notebook server with GPU
 ### OpenAI Compatible Servers
 These templates show patterns to run language models easily. At their core, [vLLM](https://github.com/vllm-project/vllm) provides an efficient LLM server that implements OpenAI's API. We use various sizes of the same coding model to illustrate use cases.
 
-Prerequisite: R2 storage configuration (see section further below)
+*Prerequisite*: R2 storage configuration (see section further below)
 
 Let's declare a Hugging Face repo: `MODEL=Qwen/Qwen2.5-Coder-7B-Instruct`
 
