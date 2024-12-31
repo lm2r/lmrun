@@ -19,7 +19,7 @@ Jupyter notebook server with GPU
 3. redirect Jupyter default port while opening a shell on the server `ssh -L 8888:localhost:8888 jupyter` 
 4. paste the access URL in a browser
 
-### OpenAI Compatible Server
+### LLM Server
 These templates show patterns to run language models easily. At their core, [vLLM](https://github.com/vllm-project/vllm) provides an efficient LLM server that implements OpenAI's API. We use various sizes of the same coding model to illustrate use cases.
 
 *Prerequisite*: R2 storage configuration (see section further below)
@@ -40,6 +40,7 @@ The model will be ready to be served globally from object storage. `-i 5 --down`
 sky launch vllm.yaml --env MODEL=$MODEL --env VERSION=$VERSION -c vllm
 ```
 - **Call** your LLM server:
+
 To remain secure, this simple setup requires a SSH tunnel for remote requests: `ssh -L 8000:localhost:8000 vllm`. Example request from your local machine or on the server:
 ```
 curl http://localhost:8000/v1/chat/completions -H "Content-Type: application/json" -d '{
