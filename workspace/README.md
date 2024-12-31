@@ -4,7 +4,7 @@ These templates run local code on remote GPUs (or other accelerators) with acces
 They upload code to leverage transients and cheap accelerators.
 
 ## Launch
-Prerequisite: first 3 steps of the [Quickstart](/README.md#quickstart)
+*Prerequisite*: first 3 steps of the [Quickstart](/README.md#quickstart)
 1. activate the Python environment with `poetry shell`
 2. `sky check` to verify cloud access - [doc](https://docs.skypilot.co/en/latest/getting-started/installation.html#verifying-cloud-access)
 3. familiarize yourself with SkyPilot [Quickstart](https://docs.skypilot.co/en/latest/getting-started/quickstart.html#stop-terminate-a-cluster): see at least how to [stop](https://docs.skypilot.co/en/latest/getting-started/quickstart.html#stop-terminate-a-cluster) incurring costs for resources or plan to make use of [autostop](https://docs.skypilot.co/en/latest/reference/auto-stop.html)

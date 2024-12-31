@@ -14,7 +14,7 @@ VPCs are only deployed in regions where selected accelerators are available. The
 2. Update the Pulumi stack following the deployment process below everytime `Pulumi.yaml` is edited.
 
 ## Deployment
-Prerequisite: first 2 steps of the [Quickstart](/README.md#quickstart)
+*Prerequisite*: first 2 steps of the [Quickstart](/README.md#quickstart)
 1. `poetry shell` to activate the environment
 2. log in to Pulumi admin backend: first, export your account ID or retrieve it like below
 ```bash

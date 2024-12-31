@@ -10,7 +10,7 @@ This Pulumi stack creates the bare minimum resources to manage cloud deployments
 This stack produces a local Pulumi state, mainly in `aws/.pulumi`, resulting from `pulumi` commands. It isn't too critical as it's easy enough to keep track of two keys and two buckets. After this bootstrap, resources will be tracked in remote backends.
 
 ## Usage
-Prerequisite: the local environment must have been configured (see main README).
+*Prerequisite*: the local environment must have been configured (see main README).
 1. activate the environment `poetry shell`
 2. head to a provider folder, e.g. `cd aws`
 3. provision resources with `pulumi up -s $AWS_PROFILE` to reuse the profile as a stack name matching the environment: this command also creates Pulumi.$AWS\_PROFILE.yaml and a .pulumi folder
