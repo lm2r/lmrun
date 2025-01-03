@@ -1,4 +1,4 @@
-name: model-download
+name: hf-to-r2
 
 resources:
   # default SkyPilot image runs on Intel (i) architecture

@@ -1,0 +1,33 @@
+name: vLLM-7B
+
+resources:
+  # 1 x L4 GPU by default, can be overriden with --gpus
+  accelerators: L4:1
+  # arbitrarily small disk (GB), the model is loaded from mounted bucket
+  disk_size: 64
+
+envs:
+  # Hugging Face repo id 'namespace/repo_name'
+  MODEL:
+  # model version: commit hash from model repository in bucket key
+  VERSION: 
+  # vLLM serve CLI options passed in a single quoted string
+  SERVE_OPTS: ""
+
+file_mounts:
+  /r2:
+    source: r2://lmrun
+
+# create Python 3.12 (last compatible) environmnent to install vLLM
+setup: |
+  conda init bash
+  conda create -n vllm python=3.12 -y
+  conda activate vllm
+  pip install vllm
+
+# - full memory utilization (1) fits at least a 7B model's 32k context on a L4
+# - 'auto' generation config loads it from the model
+run: |
+  conda activate vllm
+  vllm serve $SERVE_OPTS --gpu-memory-utilization 1 --generation-config auto \
+      /r2/model/$MODEL/$VERSION

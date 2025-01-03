@@ -5,12 +5,12 @@ Infrastructure as Code (IaC) for AI practitioners
 - Ensure the cheap availability of AI accelerators with a seamless DX
 
 [SkyPilot](https://github.com/skypilot-org/skypilot) made these **features** possible
-- Global network for better availability and cheaper compute
-- Open stack: work with any tool or framework, LMRun runs underneath
-- No data lock-in: free bandwidth thanks to [R2](https://www.cloudflare.com/developer-platform/products/r2/)
+- Global network of multiple clouds for better availability and cheaper compute
+- Open stack: work with any tool or framework on cloud-agnostic infrastructure
+- No data lock-in: free or low-cost egress bandwidth for high throughput
 - Deploy on hyperscalers (AWS) for enterprise-grade integrations and services
 
-> LMRun is a great fit when managed services are not
+> Thanks to SkyPilot, LMRun delivers agile AI computing when you don't have a large idle cluster at your disposal.
 
 ## Quickstart
 1. Set up your [local environment](#local-environment).

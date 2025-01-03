@@ -1,19 +1,22 @@
 name: vLLM
 
 resources:
-  instance_type: g6.xlarge
-  # arbitrarily small disk (GB), the model is loaded from bucket
-  disk_size: 64
+  # big enough for on-disk model (GB)
+  disk_size: 128
+  # defined with --gpus in `sky launch`, to align other CLI parameters
+  # accelerators:
 
 envs:
-  # Huggin Face repo id 'namespace/repo_name'
+  # Hugging Face repo id 'namespace/repo_name'
   MODEL:
-  # model version: commit hash from model repository in bucket key
+  # model version: commit hash from model repository
   VERSION: 
   # vLLM serve CLI options passed in a single quoted string
   SERVE_OPTS: ""
 
 file_mounts:
+  # allow the local persistence of artefacts to R2 bucket
+  # -> do not load weights from the local path: throttled throughput
   /r2:
     source: r2://lmrun
 
@@ -24,9 +27,8 @@ setup: |
   conda activate vllm
   pip install vllm
 
-# - full memory utilization fits at least a 7B model's 32k context on a L4
-# - 'auto' generation config loads it from the model
+# 'auto' generation config loads it from the model
 run: |
   conda activate vllm
-  vllm serve $SERVE_OPS --gpu-memory-utilization 1 --generation-config auto \
-      /r2/model/$MODEL/$VERSION
+  vllm serve $SERVE_OPTS --gpu-memory-utilization 1 \
+      --generation-config auto --revision $VERSION $MODEL

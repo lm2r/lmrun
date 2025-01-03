@@ -1,7 +1,5 @@
 # Workspace Compute
-These templates run local code on remote GPUs (or other accelerators) with access to large storage. 
-
-They upload code to leverage transients and cheap accelerators.
+These templates extend a local development environment with remote GPUs (or other accelerators) and storage. 
 
 ## Launch
 *Prerequisite*: first 3 steps of the [Quickstart](/README.md#quickstart)
@@ -20,24 +18,28 @@ Jupyter notebook server with GPU
 4. paste the access URL in a browser
 
 ### LLM Server
-These templates show patterns to run language models easily. At their core, [vLLM](https://github.com/vllm-project/vllm) provides an efficient LLM server that implements OpenAI's API. We use various sizes of the same coding model to illustrate use cases.
+These templates show patterns to run language models on any infrastructure. At their core, [vLLM](https://github.com/vllm-project/vllm) provides an efficient LLM server that implements OpenAI's API. We use various sizes of the same coding model to illustrate the ideal solution at different scales.
 
 *Prerequisite*: R2 storage configuration (see section further below)
+
+#### Small Models
+*~8B parameters, tested on 15-GiB model*
+> Bigger models (>= 32B verified, limit may be lower) require paid bandwidth, using the more generic `vllm.yaml` template, also used with spot instances below.
 
 Let's declare a Hugging Face repository and its latest commit hash:
 ```bash
 MODEL=Qwen/Qwen2.5-Coder-7B-Instruct
-# downloads pull the latest, it is then explicitly specified to run the model
+# uploads pull the latest, the version is then explicitly specified to run the model
 VERSION=0eb6b1ed2d0c4306bc637d09ecef51e59d3dfe05
 ```
-- **Download** and upload a model to an R2 bucket to use it:
+- **Upload** a model to an R2 bucket to make it available for global inference. Typically, this model would be custom or private. Otherwise, load it directly from Hugging Face with `vllm.yaml`, like the spot instance example below.
 ```bash
-sky launch model-download.yaml --env REPO=$MODEL -i 5 --down
+sky launch hf-to-r2.yaml --env REPO=$MODEL -i 5 --down
 ```
-The model will be ready to be served globally from object storage. `-i 5 --down` shuts down the server after 5 minutes of inactivity. Note that this job incurs AWS egress costs, typically $0.09/GB. Then, ingress to anywhere will be free.
-- **Serve** the LLM you just staged, the version is in the R2 bucket path:
+`-i 5 --down` shuts down the upload server after 5 minutes of inactivity.
+- **Serve** the LLM you just staged, the version is in the R2 bucket path. `vllm-7B.yaml` is only suitable for small models, as they're loaded through a mounted R2 bucket with limited throughput above this transfer size (Cloudflare runs smaller models on the edge):
 ```bash
-sky launch vllm.yaml --env MODEL=$MODEL --env VERSION=$VERSION -c vllm
+sky launch vllm-7B.yaml --env MODEL=$MODEL --env VERSION=$VERSION -c vllm
 ```
 - **Call** your LLM server:
 
@@ -52,6 +54,45 @@ curl http://localhost:8000/v1/chat/completions -H "Content-Type: application/jso
 }'
 ```
 Any SDK compatible with OpenAI API works.
+
+### Spot Instances
+They are two ways to run workloads on cheap but preemptible VMs with up to 90% discount: regular tasks (shown below) or managed jobs (shown in `benchmark`).
+
+As a regular task, a preempted spot instance doesn't recover. It's still often worth it. Save results, checkpoints or data in the bucket folder `/r2` to protect against random termination.
+
+Let's declare a Hugging Face repository with a bigger model:
+```bash
+MODEL=Qwen/Qwen2.5-Coder-32B-Instruct
+VERSION=b47205940b83b5b484577359f71ee7b88472df67
+```
+Notice we added `--use-spot` to `sky launch`. We request accelerators with `--gpus` outside the template to make it obvious that `-tp`, short for `--tensor-parallel-size`, must split tensors across 4 GPUs. This option is passed to `vllm serve`. 
+
+At the time of writing, 3 regions offer this spot configuration for less than $1/hour, instead of $5 to $6 on demand. Look up SkyPilot catalog in `~/.sky/catalogs/v*/aws/vms.csv`, identify these regions and request [quotas](/mesh/README.md#quotas) for them.
+```bash
+(lmrun-py3.11) workspace % sky launch vllm.yaml -c vllm --gpus L4:4 --use-spot \
+    --env MODEL=$MODEL --env VERSION=$VERSION --env SERVE_OPTS="-tp 4"
+Task from YAML spec: vllm.yaml
+Considered resources (1 node):
+----------------------------------------------------------------------------------------------------
+ CLOUD   INSTANCE            vCPUs   Mem(GB)   ACCELERATORS   REGION/ZONE       COST ($)   CHOSEN
+----------------------------------------------------------------------------------------------------
+ AWS     g6.12xlarge[Spot]   48      192       L4:4           ap-northeast-2a   0.66          ✔
+----------------------------------------------------------------------------------------------------
+```
+SkyPilot found 4 x L4s on a spot VM in Seoul for less than the price of a single on-demand GPU.
+
+Once you redirected the port `8000` through SSH like above, specify the Hugging Face id as the model of your request:
+```
+curl http://localhost:8000/v1/chat/completions -H "Content-Type: application/json" -d '{
+  "model": "Qwen/Qwen2.5-Coder-32B-Instruct",
+  "messages": [
+    {"role": "system", "content": "You are a helpful code assistant."},
+    {"role": "user", "content": "Can you keep coding while I grab a coffee?"}
+  ]
+}'
+```
+
+> To expose large and private model weights or datasets, consider Hugging Face repos or a bucket on Oracle Cloud. They should deliver sustained throughput (contrary to R2) and cost-effective distribution of data to any infrastructure provider. HF would work like above and an OCI bucket would be mounted wihtin templates like R2.
 
 ## Cloudflare R2 storage
 If you're already familiar with S3, R2 is a more efficient substitute for LMRun global architecture, even when compute is provided by AWS.
