@@ -18,25 +18,25 @@ Jupyter notebook server with GPU
 4. paste the access URL in a browser
 
 ### LLM Server
-These templates show patterns to run language models on any infrastructure. At their core, [vLLM](https://github.com/vllm-project/vllm) provides an efficient LLM server that implements OpenAI's API. We use various sizes of the same coding model to illustrate the ideal solution at different scales.
+Two different sizes of the same model illustrate an ideal solution to bring data and models to compute at different scales. These templates also show patterns to run language models on any infrastructure. At their core, [vLLM](https://github.com/vllm-project/vllm) provides an efficient LLM server that implements OpenAI's API.
 
-*Prerequisite*: R2 storage configuration (see section further below)
+*Prerequisite*: R2 storage [configuration](#cloudflare-r2-storage)
 
-#### Small Models
-*~8B parameters, tested on 15-GiB model*
-> Bigger models (>= 32B verified, limit may be lower) require paid bandwidth, using the more generic `vllm.yaml` template, also used with spot instances below.
+#### Regular Throughput: R2, incl. small models
+*small ~ 16-GiB model (tested 8B), up to 50 GiB depending on throttle tolerance*
+> Bigger models (>= 50 GiB, tested 32B, limit may be lower) require premium storage distribution with the more generic `vllm.yaml` template in section further below.
 
 Let's declare a Hugging Face repository and its latest commit hash:
 ```bash
 MODEL=Qwen/Qwen2.5-Coder-7B-Instruct
-# uploads pull the latest, the version is then explicitly specified to run the model
+# uploads push the latest, the version is then explicitly specified to run the model
 VERSION=0eb6b1ed2d0c4306bc637d09ecef51e59d3dfe05
 ```
-- **Upload** a model to an R2 bucket to make it available for global inference. Typically, this model would be custom or private. Otherwise, load it directly from Hugging Face with `vllm.yaml`, like the spot instance example below.
+- **Upload** a model to an R2 bucket to make it available for global inference. 
 ```bash
 sky launch hf-to-r2.yaml --env REPO=$MODEL -i 5 --down
 ```
-`-i 5 --down` shuts down the upload server after 5 minutes of inactivity.
+`-i 5 --down` shuts down the upload server after 5 minutes of inactivity. Typically, the model would be custom or private. Otherwise, load it directly from Hugging Face with `vllm.yaml`, like the spot instance example below.
 - **Serve** the LLM you just staged, the version is in the R2 bucket path. `vllm-7B.yaml` is only suitable for small models, as they're loaded through a mounted R2 bucket with limited throughput above this transfer size (Cloudflare runs smaller models on the edge):
 ```bash
 sky launch vllm-7B.yaml --env MODEL=$MODEL --env VERSION=$VERSION -c vllm
@@ -55,7 +55,7 @@ curl http://localhost:8000/v1/chat/completions -H "Content-Type: application/jso
 ```
 Any SDK compatible with OpenAI API works.
 
-### Spot Instances
+### Sustained Throughput: Hugging Face, incl. spot instance demo
 They are two ways to run workloads on cheap but preemptible VMs with up to 90% discount: regular tasks (shown below) or managed jobs (shown in `benchmark`).
 
 As a regular task, a preempted spot instance doesn't recover. It's still often worth it. Save results, checkpoints or data in the bucket folder `/r2` to protect against random termination.
@@ -92,7 +92,20 @@ curl http://localhost:8000/v1/chat/completions -H "Content-Type: application/jso
 }'
 ```
 
-> To expose large and private model weights or datasets, consider Hugging Face repos or a bucket on Oracle Cloud. They should deliver sustained throughput (contrary to R2) and cost-effective distribution of data to any infrastructure provider. HF would work like above and an OCI bucket would be mounted wihtin templates like R2.
+### Sustained Throughput: private model or dataset
+To expose large and private model weights or datasets, consider Hugging Face repos or a bucket on Oracle Cloud. According to current pricing, they should deliver sustained throughput (contrary to R2) and cost-effective distribution of data to any infrastructure provider over the internet. We demonstrate HF below. An OCI bucket would be mounted within templates like R2.
+
+*Prerequisites*: 
+- Cudo Compute [configuration](https://docs.skypilot.co/en/latest/getting-started/installation.html#cudo-compute) to automatically push a model to a private HF repo. Besides GPUs, Cudo is handy for CPU workloads like data preparation without egress fees (afaik). A mere 32B model upload costs more than $5 in network outbound fees on all 3 hyperscalers. Check that Cudo is enabled with `sky check`.
+- Set a public SSH key on [HF](https://huggingface.co/settings/keys).
+- Create a new private repo by visiting [huggingface.co/new](huggingface.co/new). Name it `Qwen2.5-Coder-32B-Instruct` for this example.
+
+1. upload public model to private Hugging Face repository for testing 
+```bash
+sky launch hf-to-private.yaml -i 5 --down \
+    --env ORG=Qwen --env NAME=Qwen2.5-Coder-32B-Instruct \
+    --env NEW_ORG="<YOUR_HF_USERNAME>" --env SSH_KEY="</path/to/hf/private/key>"
+```
 
 ## Cloudflare R2 storage
 If you're already familiar with S3, R2 is a more efficient substitute for LMRun global architecture, even when compute is provided by AWS.
@@ -100,4 +113,4 @@ If you're already familiar with S3, R2 is a more efficient substitute for LMRun 
 1. For access to data or models on object storage, you will need a Cloudflare account with a payment method for R2, which won't be used within the free tier.
 2. On Cloudflare, go to “R2 Object Storage” in the left-side menu > “Create bucket” > Call it “lmrun” and click “Create bucket”.
 3. Configure R2 as described in SkyPilot [doc](https://docs.skypilot.co/en/latest/getting-started/installation.html#cloudflare-r2). When creating the API token, restrict permissions to "Object Read & Write" and apply to the `lmrun` bucket only. Note that all values you need, incl. the Cloudflare Account ID, are on the final screen. The account is the first part of the URL in `https://<Your Account ID>.r2.cloudflarestorage.com`.
-4. Check your configuration with `sky check`: the command should output this line "Cloudflare (for R2 object store): enabled" in green.
+4. Check your configuration with `sky check`: the command should output "Cloudflare (for R2 object store): enabled" in green.

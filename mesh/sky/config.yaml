@@ -11,6 +11,7 @@ jobs:
 allowed_clouds:
   - aws
   - cloudflare
+  - cudo
 
 aws:
   labels:

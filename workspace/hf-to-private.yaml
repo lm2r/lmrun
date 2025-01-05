@@ -1,0 +1,35 @@
+name: hf-to-private
+
+resources:
+  cloud: cudo
+  # vCPUs
+  cpus: 2+
+  # GiB
+  memory: 8+
+  # allocate at least model parameters B x 4 + 16 (root + extra) in GB 
+  disk_size: 144
+
+envs:
+  # make environment variables required (null is the same as empty)
+  ORG: null
+  NAME: null
+  NEW_ORG: null
+
+file_mounts:
+  ~/.ssh/id: ${SSH_KEY}
+
+setup: |
+  sudo apt-get update
+  sudo apt install git-lfs
+
+  #ssh-add /hf-key
+
+# 1. clone
+# 2. force push to private repo, overriding the initial automated commit
+run: |
+  git clone --depth 1 https://huggingface.co/${ORG}/${NAME}
+
+  cd $NAME
+  git remote add private git@hf.co:${NEW_ORG}/${NAME}
+  git push -f private
+
