@@ -10,7 +10,7 @@ Infrastructure as Code (IaC) for AI practitioners
 - No data lock-in: free or low-cost egress bandwidth for high throughput
 - Deploy on hyperscalers (AWS) for enterprise-grade integrations and services
 
-> Thanks to SkyPilot, LMRun delivers agile AI computing when you don't have a large idle cluster at your disposal.
+> Thanks to SkyPilot, LMRun delivers agile AI computing without a large idle cluster.
 
 ## Quickstart
 1. Set up your [local environment](#local-environment).
@@ -18,8 +18,6 @@ Infrastructure as Code (IaC) for AI practitioners
 3. Follow instructions in `mesh` to deploy the cluster mesh.
 4. Go to `workspace` for example templates and use cases. 
 5. Make them yours: change models, tune configuration, add resources, etc..
-
-> MLOps services like prompt tracing and experiment tracking are coming soon.
 
 ## Local Environment
 1. Complete [system configuration](#system-configuration).
