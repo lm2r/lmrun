@@ -4,7 +4,7 @@ Infrastructure as Code (IaC) for AI practitioners
 - Turn your cloud accounts into an AI platform
 - Ensure the cheap availability of AI accelerators with a seamless DX
 
-[SkyPilot](https://github.com/skypilot-org/skypilot) made these **features** possible
+[SkyPilot](https://github.com/skypilot-org/skypilot) made these *features* possible
 - Global network of multiple clouds for better availability and cheaper compute
 - Open stack: work with any tool or framework on cloud-agnostic infrastructure
 - No data lock-in: free or low-cost egress bandwidth for high throughput
