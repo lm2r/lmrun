@@ -18,13 +18,17 @@ Jupyter notebook server with GPU
 4. paste the access URL in a browser
 
 ### LLM Server & Data Transfers
-Two sizes of the same model show how to bring data to compute over the internet at different scales. These templates also define patterns to run language models on any infrastructure. At their core, [vLLM](https://github.com/vllm-project/vllm) provides an efficient LLM server that implements OpenAI's API.
+Two sizes of the same model show how to bring data to compute over the internet at different scales. These templates also define a pattern to run language models on personal servers: [vLLM](https://github.com/vllm-project/vllm) provides an efficient LLM server that implements OpenAI's API.
 
 *Prerequisite*: R2 storage [configuration](#cloudflare-r2-storage)
 
-#### Regular Throughput: R2, incl. small models
+> click to expand
+<details>
+<summary>Regular Throughput: R2, incl. small models</summary>
+
+---
 *small ~ 16-GiB model (tested 8B), up to 50 GiB depending on throttle tolerance*
-> Bigger models (>= 50 GiB, tested 32B, limit may be lower) require premium storage distribution with the more generic `vllm.yaml` template in section further below.
+> Bigger models (>= 50 GiB, tested 32B, limit may be lower) require premium storage distribution with the more generic `vllm.yaml` template in section below.
 
 Let's declare a Hugging Face repository and its latest commit hash:
 ```bash
@@ -54,8 +58,13 @@ curl http://localhost:8000/v1/chat/completions -H "Content-Type: application/jso
 }'
 ```
 Any SDK compatible with OpenAI API works.
+</details>
 
-#### Sustained Throughput: Hugging Face, incl. spot instance demo
+---
+<details>
+<summary>Sustained Throughput: Hugging Face, incl. spot instance demo</summary>
+
+---
 They are two ways to run workloads on cheap but preemptible VMs with up to 90% discount: regular tasks (shown below) or managed jobs (shown in `benchmark`).
 
 As a regular task, a preempted spot instance doesn't recover. It's still often worth it. Save results, checkpoints or data in the bucket folder `/r2` to protect against random termination.
@@ -91,8 +100,13 @@ curl http://localhost:8000/v1/chat/completions -H "Content-Type: application/jso
   ]
 }'
 ```
+</details>
 
-#### Sustained Throughput: private model or dataset
+---
+<details>
+<summary>Sustained Throughput: private model or dataset</summary>
+
+---
 To expose large and private model weights or datasets, consider Hugging Face repos or a bucket on Oracle Cloud. According to current pricing, they should deliver sustained throughput (contrary to R2) and cost-effective distribution of data to any infrastructure provider over the internet. We demonstrate HF below. An OCI bucket would be mounted within templates like R2.
 
 *Prerequisites*: 
@@ -107,7 +121,9 @@ sky launch hf-to-private.yaml -i 5 --down \
     --env NEW_ORG="<YOUR_HF_USERNAME>" --env SSH_KEY="</path/to/hf/private/key>"
 ```
 2. export your HF token in your shell, reuse a similar `sky launch vllm.yaml` command as for a public model, and add `--env HF_TOKEN` to it: `MODEL` follows the format `"<YOUR_HF_USERNAME>/Qwen2.5-Coder-32B-Instruct"` and the commit `VERSION` can be copied from HF repo "Files and versions" tab
+</details>
 
+---
 ## Cloudflare R2 storage
 If you're already familiar with S3, R2 is a more efficient substitute for LMRun global architecture, even when compute is provided by AWS.
 
