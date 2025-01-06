@@ -11,7 +11,7 @@ jobs:
 allowed_clouds:
   - aws
   - cloudflare
-  - cudo
+  - paperspace
 
 aws:
   labels:

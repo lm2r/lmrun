@@ -17,8 +17,8 @@ Jupyter notebook server with GPU
 3. redirect Jupyter default port while opening a shell on the server `ssh -L 8888:localhost:8888 jupyter` 
 4. paste the access URL in a browser
 
-### LLM Server
-Two different sizes of the same model illustrate an ideal solution to bring data and models to compute at different scales. These templates also show patterns to run language models on any infrastructure. At their core, [vLLM](https://github.com/vllm-project/vllm) provides an efficient LLM server that implements OpenAI's API.
+### LLM Server & Data Transfers
+Two sizes of the same model show how to bring data to compute over the internet at different scales. These templates also define patterns to run language models on any infrastructure. At their core, [vLLM](https://github.com/vllm-project/vllm) provides an efficient LLM server that implements OpenAI's API.
 
 *Prerequisite*: R2 storage [configuration](#cloudflare-r2-storage)
 
@@ -55,7 +55,7 @@ curl http://localhost:8000/v1/chat/completions -H "Content-Type: application/jso
 ```
 Any SDK compatible with OpenAI API works.
 
-### Sustained Throughput: Hugging Face, incl. spot instance demo
+#### Sustained Throughput: Hugging Face, incl. spot instance demo
 They are two ways to run workloads on cheap but preemptible VMs with up to 90% discount: regular tasks (shown below) or managed jobs (shown in `benchmark`).
 
 As a regular task, a preempted spot instance doesn't recover. It's still often worth it. Save results, checkpoints or data in the bucket folder `/r2` to protect against random termination.
@@ -92,20 +92,21 @@ curl http://localhost:8000/v1/chat/completions -H "Content-Type: application/jso
 }'
 ```
 
-### Sustained Throughput: private model or dataset
+#### Sustained Throughput: private model or dataset
 To expose large and private model weights or datasets, consider Hugging Face repos or a bucket on Oracle Cloud. According to current pricing, they should deliver sustained throughput (contrary to R2) and cost-effective distribution of data to any infrastructure provider over the internet. We demonstrate HF below. An OCI bucket would be mounted within templates like R2.
 
 *Prerequisites*: 
-- Cudo Compute [configuration](https://docs.skypilot.co/en/latest/getting-started/installation.html#cudo-compute) to automatically push a model to a private HF repo. Besides GPUs, Cudo is handy for CPU workloads like data preparation without egress fees (afaik). A mere 32B model upload costs more than $5 in network outbound fees on all 3 hyperscalers. Check that Cudo is enabled with `sky check`.
+- Paperspace [configuration](https://docs.skypilot.co/en/latest/getting-started/installation.html#paperspace) to automatically push a model to a private HF repo. Besides GPUs, Paperspace accommodates CPU workloads like data preparation without egress fees. While a Paperspace C5 machine typically uploads from 25 MB/s to 288 MB/s, which isn't great but workable in the lower range, a mere 32B model upload costs more than $5 in network outbound fees on all 3 hyperscalers. Check that Paperspace is enabled with `sky check`.
 - Set a public SSH key on [HF](https://huggingface.co/settings/keys).
 - Create a new private repo by visiting [huggingface.co/new](huggingface.co/new). Name it `Qwen2.5-Coder-32B-Instruct` for this example.
 
-1. upload public model to private Hugging Face repository for testing 
+1. upload a public model to a private Hugging Face repository for testing 
 ```bash
 sky launch hf-to-private.yaml -i 5 --down \
     --env ORG=Qwen --env NAME=Qwen2.5-Coder-32B-Instruct \
     --env NEW_ORG="<YOUR_HF_USERNAME>" --env SSH_KEY="</path/to/hf/private/key>"
 ```
+2. export your HF token in your shell, reuse a similar `sky launch vllm.yaml` command as for a public model, and add `--env HF_TOKEN` to it: `MODEL` follows the format `"<YOUR_HF_USERNAME>/Qwen2.5-Coder-32B-Instruct"` and the commit `VERSION` can be copied from HF repo "Files and versions" tab
 
 ## Cloudflare R2 storage
 If you're already familiar with S3, R2 is a more efficient substitute for LMRun global architecture, even when compute is provided by AWS.

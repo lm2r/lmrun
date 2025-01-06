@@ -1,7 +1,7 @@
 name: hf-to-private
 
 resources:
-  cloud: cudo
+  cloud: paperspace
   # vCPUs
   cpus: 2+
   # GiB
@@ -16,20 +16,18 @@ envs:
   NEW_ORG: null
 
 file_mounts:
-  ~/.ssh/id: ${SSH_KEY}
+  ~/.ssh/hf: ${SSH_KEY}
 
 setup: |
   sudo apt-get update
-  sudo apt install git-lfs
+  sudo apt-get install git-lfs
 
-  #ssh-add /hf-key
-
-# 1. clone
+# 1. clone, no --depth: shallow clones can't be pushed to a new repo
 # 2. force push to private repo, overriding the initial automated commit
 run: |
-  git clone --depth 1 https://huggingface.co/${ORG}/${NAME}
+  git clone https://huggingface.co/${ORG}/${NAME}
 
   cd $NAME
   git remote add private git@hf.co:${NEW_ORG}/${NAME}
-  git push -f private
+  git -c core.sshCommand="ssh -i ~/.ssh/hf" push -f private
 
