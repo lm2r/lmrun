@@ -124,6 +124,13 @@ sky launch hf-to-private.yaml -i 5 --down \
 </details>
 
 ---
+### Advanced
+*coming soon*
+
+Explore more advanced examples in folders.
+- `benchmark`: tracing prompts, managed jobs, pipeline, and model benchmark on distributed servers
+- `fine-tune`
+
 ## Cloudflare R2 storage
 If you're already familiar with S3, R2 is a more efficient substitute for LMRun global architecture, even when compute is provided by AWS.
 
