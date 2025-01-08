@@ -6,7 +6,8 @@ import pulumi_aws_native as aws_
 
 from aws.network.cidr_blocks import allocations
 from aws.region.zones import enabled_az_ids
-from aws.network.firewall import security_groups
+from aws.network.firewall import main_vm_sg, satellite_vm_sg
+from aws.network.peering import peer, main_private_interfaces
 
 
 def cluster(main_region: str, regions: list[str]):
@@ -82,35 +83,26 @@ def cluster(main_region: str, regions: list[str]):
                 opts=alloc["opt"],
             )
 
+        # reassign main allocation to peer below after a full first loop
         if vpc_region == main_region:
             main_alloc = alloc
 
-    # second loop to peer VPCs and configure firewall (security groups)
+    # second loop to peer VPCs
     for alloc in selected_allocations:
-        security_groups(alloc["region"], alloc["vpc"].vpc_id, alloc["opt"])
-
         if alloc["region"] != main_region:
-            # peer with main VPC
-            pcx = aws_.ec2.VpcPeeringConnection(
+            peer(main_alloc, alloc, ref_tag)
+            satellite_vm_sg(
                 alloc["region"],
-                peer_vpc_id=main_alloc["vpc"].vpc_id,
-                vpc_id=alloc["vpc"].vpc_id,
-                peer_region=main_region,
-                tags=[ref_tag],
-                opts=alloc["opt"],
+                main_alloc["cidr_block"],
+                alloc["vpc"].vpc_id,
+                alloc["opt"],
             )
-            # route entire VPCs to each other
-            aws_.ec2.Route(
-                alloc["region"] + "_private_outbound",
-                route_table_id=alloc["rt"].route_table_id,
-                destination_cidr_block=main_alloc["cidr_block"],
-                vpc_peering_connection_id=pcx.id,
-                opts=alloc["opt"],
+        else:
+            main_vm_sg(
+                main_region,
+                selected_allocations,
+                alloc["vpc"].vpc_id,
+                alloc["opt"],
             )
-            aws_.ec2.Route(
-                alloc["region"] + "_private_inbound",
-                route_table_id=main_alloc["rt"].route_table_id,
-                destination_cidr_block=alloc["cidr_block"],
-                vpc_peering_connection_id=pcx.id,
-                opts=main_alloc["opt"],
-            )
+            # private network interfaces to connect satellite VMs to fixed IPs
+            main_private_interfaces(main_alloc["subnets"])

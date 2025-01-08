@@ -32,5 +32,5 @@ These steps prepare the local system to run the environment. We provide guidance
 2. Configuration reads a `.env` file and requires a plugin to load it automatically: `poetry self add poetry-plugin-dotenv`.
 3. Install Python 3.11 if it isn't available locally. You can use [Pyenv](https://github.com/pyenv/pyenv?tab=readme-ov-file#installation): `pyenv install 3.11`.
 4. Install [Pulumi](https://www.pulumi.com/docs/install/) to manage cloud resources.
-5. Create an `lmrun` AWS [profile](https://docs.aws.amazon.com/cli/v1/userguide/cli-configure-files.html) with admin permissions in `~/.aws/credentials`. We recommend creating a new AWS account for this profile. If you already have a main account, create the new account from AWS [Organizations](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_introduction.html). To use another profile name, edit `AWS_PROFILE` in `.env`.
+5. Use AWS CLI V2 to create an `lmrun` [profile](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html#cli-configure-files-methods) with admin permissions. We recommend creating a new AWS account for this profile. If you already have a main account, create the new account from AWS [Organizations](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_introduction.html). To use another profile name, edit `AWS_PROFILE` in `.env`.
 

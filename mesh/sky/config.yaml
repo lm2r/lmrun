@@ -18,7 +18,7 @@ aws:
     config: lmrun
   vpc_name: lmrun
   security_group_name:
-    - "*": lmrun-ssh
+    - "*": lmrun
   remote_identity:
     - "*": lmrun  # IAM instance profile
 

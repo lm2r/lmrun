@@ -27,8 +27,11 @@ def enabled_az_ids(region_name: str) -> list[str]:
         ]
     )
 
-    az_ids = [az["ZoneId"] for az in response["AvailabilityZones"]]
-    return az_ids
+    azs = [(az["ZoneName"], az["ZoneId"]) for az in response["AvailabilityZones"]]
+    # sort by AZ name for deterministic mapping with network interface IP,
+    # e.g. by iterating in order, us-east-1a subnet will be 10.4.0.x,
+    #                             us-east-1b                10.4.32.x, etc.
+    return [id for _, id in sorted(azs, key=lambda x: x[0])]
 
 
 if __name__ == "__main__":

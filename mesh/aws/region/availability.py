@@ -3,6 +3,7 @@
 from typing import List
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import boto3
+from botocore.exceptions import ClientError
 
 
 def check_region(region: str, instance_types: List[str]) -> tuple:
@@ -17,10 +18,17 @@ def check_region(region: str, instance_types: List[str]) -> tuple:
         Tuple of (region, list of available instance types)
     """
     ec2 = boto3.client("ec2", region_name=region)
-    response = ec2.describe_instance_type_offerings(
-        LocationType="region",
-        Filters=[{"Name": "instance-type", "Values": instance_types}],
-    )
+    try:
+        response = ec2.describe_instance_type_offerings(
+            LocationType="region",
+            Filters=[{"Name": "instance-type", "Values": instance_types}],
+        )
+    except ClientError as e:
+        message = (
+            f"Boto3 client failed in {region}: is it a new region to activate? "
+            "You may need to apply the cloud initialization stack in lmrun/init."
+        )
+        raise ValueError(message) from e
 
     available_types = [
         offering["InstanceType"] for offering in response["InstanceTypeOfferings"]
