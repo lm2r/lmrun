@@ -27,6 +27,7 @@ jobs:
       - name: Install venv
         run: |
           pip install poetry
+          poetry self add poetry-plugin-dotenv
           poetry install
       - name: Mesh doctests
         # exclude at least __main__.py to test own source files
