@@ -27,10 +27,12 @@ jobs:
       - name: Install venv
         run: |
           pip install poetry
-          poetry self add poetry-plugin-dotenv
           poetry install
       - name: Mesh doctests
-        # exclude at least __main__.py to test own source files
+        # 1. go to the Pulumi project to load local modules
+        # 2. export variables instead of loading .env: conflicting AWS_PROFILE auth
+        # 3. exclude at least __main__.py to test own source files
         run: |
           cd mesh
+          export LMRUN_SKY_REF=lmrun
           poetry run python -m doctest $(find . -name "*.py" ! -path "*__*__*")
