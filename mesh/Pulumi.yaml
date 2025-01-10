@@ -14,8 +14,3 @@ config:
       - g6.xlarge
       - g6.2xlarge
       - g6.12xlarge
-  skyRef:
-    type: string
-    description: name of VPCs, SGs & IAM role targeted by SkyPilot
-    # referenced in sky/config.yaml
-    default: lmrun

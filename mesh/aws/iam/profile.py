@@ -1,14 +1,13 @@
 """a container for IAM roles attached to EC2 instances"""
 
 import os
-import pulumi
 import pulumi_aws_native as aws_
 
 
 def default():
     """default profile set in ~/.sky/config.yaml for SkyPilot VMs"""
     account_id = os.environ["AWS_ACCOUNT"]
-    sky_ref = pulumi.Config().require("skyRef")
+    sky_ref = os.environ["LMRUN_SKY_REF"]
 
     role = aws_.iam.Role(
         sky_ref,

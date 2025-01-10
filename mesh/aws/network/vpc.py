@@ -1,6 +1,6 @@
 """VPCs, incl. a main network peering with all others, subnets & routes"""
 
-import pulumi
+import os
 from pulumi import ResourceOptions
 import pulumi_aws_native as aws_
 
@@ -17,7 +17,7 @@ def cluster(main_region: str, regions: list[str]):
         regions
     ), f"one of {regions} is missing a CIDR block allocation in cidr_blocks.py"
 
-    sky_ref = pulumi.Config().require("skyRef")
+    sky_ref = os.environ["LMRUN_SKY_REF"]
     ref_tag = aws_.TagArgs(key="Name", value=sky_ref)
 
     for alloc in selected_allocations:

@@ -1,6 +1,6 @@
 """definitions of open ports"""
 
-import pulumi
+import os
 from pulumi import Output, ResourceOptions
 from pulumi_aws_native.ec2 import (
     SecurityGroup,
@@ -12,11 +12,11 @@ from pulumi_aws_native.ec2 import (
 
 from aws.network.cidr_blocks import Allocation
 
-# reference the same name in all VM security groups for global SkyPilot config
-SKY_REF = pulumi.Config().require("skyRef")
 SSH_INGRESS = SecurityGroupIngressArgs(
     ip_protocol="tcp", cidr_ip="0.0.0.0/0", from_port=22, to_port=22
 )
+# reference the same name in all VM security groups for global SkyPilot config
+sky_ref = os.environ["LMRUN_SKY_REF"]
 
 
 def self_referencing_ingress(region: str, sg_id: Output, opts: ResourceOptions):
@@ -48,8 +48,8 @@ def main_vm_sg(
     )
     sg = SecurityGroup(
         region,
-        group_name=SKY_REF,
-        group_description=f"SSH and satellite VPC inbound on {SKY_REF} instances",
+        group_name=sky_ref,
+        group_description=f"SSH and satellite VPC inbound on {sky_ref} instances",
         security_group_ingress=[
             SSH_INGRESS,
             SecurityGroupIngressArgs(
@@ -68,8 +68,8 @@ def satellite_vm_sg(
     """SG in satellite regions and referenced by name in ~/.sky/config.yaml"""
     sg = SecurityGroup(
         region,
-        group_name=SKY_REF,
-        group_description=f"SSH and main VPC inbound on {SKY_REF} instances",
+        group_name=sky_ref,
+        group_description=f"SSH and main VPC inbound on {sky_ref} instances",
         security_group_ingress=[
             SSH_INGRESS,
             SecurityGroupIngressArgs(ip_protocol="-1", cidr_ip=main_region_cidr),
