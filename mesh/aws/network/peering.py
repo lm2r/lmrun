@@ -51,13 +51,12 @@ def main_private_interfaces(subnets: list[aws_.ec2.Subnet]):
     - 10.0.0.255: Broadcast address
     """
     for i, subnet in enumerate(subnets):
-        # see how to replace sky_ref by the zone in tag name
         aws_.ec2.NetworkInterface(
             "main_private" + str(i),
             subnet_id=subnet.subnet_id,
             private_ip_address=subnet.cidr_block.apply(
                 lambda cidr: str(ipaddress.ip_network(cidr)[4])
             ),
-            # AZ (not AZ ID) could help to map from SKYPILOT_CLUSTER_INFO
+            # AZ (not AZ ID) matches SKYPILOT_CLUSTER_INFO value
             tags=[aws_.TagArgs(key="Name", value=subnet.availability_zone)],
         )

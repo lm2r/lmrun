@@ -19,6 +19,8 @@ aws:
   vpc_name: lmrun
   security_group_name:
     - "*": lmrun
+  # IAM instance profile selection by cluster name
   remote_identity:
-    - "*": lmrun  # IAM instance profile
+    - "main*": main
+    - "*": lmrun
 

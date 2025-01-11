@@ -1,0 +1,3 @@
+envs:
+  # see zone in mlflow.yaml to determine the subnet, e.g. 10.4.0.x
+  MLOPS_IP: 10.4.0.4  # always 5th IP (.4) in subnet

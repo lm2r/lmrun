@@ -1,0 +1,27 @@
+# main K3s server: cluster entry point for new VMs
+name: main
+
+resources:
+  cloud: aws
+  # must match AWS_DEFAULT_REGION
+  region: us-east-1
+  # https://docs.k3s.io/reference/resource-profiling: min. VM doubles resources
+  cpus: 1+
+  memory: 2+
+  disk_size: 16
+
+file_mounts:
+  /scripts/main.py: setup/main.py
+
+# sudo -E to preserve the environment, e.g. SKYPILOT_CLUSTER_INFO
+setup: |
+  sudo apt-get install -y python3-boto3
+  sudo -E /scripts/main.py
+
+# https://docs.k3s.io/installation/configuration
+# https://docs.k3s.io/networking/distributed-multicloud
+run: |
+  curl -sfL https://get.k3s.io | sh -s - --token $K3S_TOKEN \
+    --advertise-address $INT_K3S_URL --node-external-ip=$EXT_K3S_URL \
+    --flannel-external-ip --flannel-backend=wireguard-native
+

@@ -1,0 +1,8 @@
+resources:
+  cloud: aws
+  # zone maps to subnet: adjust MLOPS_IP in internal clients accordingly
+  # 'a' maps to 1st subnet 10.4.0.x in 10.4.x.x block
+  # 'b' would map to 2nd subnet 10.4.32.x (/19 IP blocks)
+  # 'c' would map to 3rd subnet 10.4.64.x
+  # etc
+  zone: us-east-1a  # zone to allocate a fixed IP in addition to CNI
