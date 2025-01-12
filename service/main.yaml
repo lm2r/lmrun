@@ -24,4 +24,5 @@ run: |
   curl -sfL https://get.k3s.io | sh -s - --token $K3S_TOKEN \
     --advertise-address $INT_K3S_URL --node-external-ip=$EXT_K3S_URL \
     --flannel-external-ip --flannel-backend=wireguard-native
+  sudo chmod +r /etc/rancher/k3s/k3s.yaml
 
