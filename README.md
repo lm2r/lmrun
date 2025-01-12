@@ -1,6 +1,6 @@
 # LMRun
 
-Infrastructure as Code (IaC) for AI practitioners
+AI R&D platform as a SkyPilot distribution incl. cloud infra, networking & services
 - Turn your cloud accounts into an AI platform
 - Ensure the cheap availability of AI accelerators with a seamless DX
 
