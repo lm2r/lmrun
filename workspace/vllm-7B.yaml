@@ -18,12 +18,9 @@ file_mounts:
   /r2:
     source: r2://lmrun
 
-# create Python 3.12 (last compatible) environmnent to install vLLM
 setup: |
-  conda init bash
-  conda create -n vllm python=3.12 -y
-  conda activate vllm
-  pip install vllm
+  install -m 755 /r2/setup/vllm-conda-install.sh .
+  ./vllm-conda-install.sh
 
 # - full memory utilization (1) fits at least a 7B model's 32k context on a L4
 # - 'auto' generation config loads it from the model

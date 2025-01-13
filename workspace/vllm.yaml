@@ -15,17 +15,12 @@ envs:
   SERVE_OPTS: ""
 
 file_mounts:
-  # allow the local persistence of artefacts to R2 bucket
-  # -> do not load weights from the local path: throttled throughput
   /r2:
     source: r2://lmrun
 
-# create Python 3.12 (last compatible) environmnent to install vLLM
 setup: |
-  conda init bash
-  conda create -n vllm python=3.12 -y
-  conda activate vllm
-  pip install vllm
+  install -m 755 /r2/setup/vllm-conda-install.sh .
+  ./vllm-conda-install.sh
 
 # 'auto' generation config loads it from the model
 run: |

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""setup of K3s main server"""
+"""K3s server bootstrap"""
 
 import os
 import json
@@ -8,6 +8,21 @@ import secrets
 import string
 from socket import gethostbyname, gethostname
 import requests
+import subprocess
+
+
+def run(command: list[str], shell=False):
+    try:
+        output = subprocess.run(
+            command, shell=shell, check=True, capture_output=True, text=True
+        )
+        print("STDOUT:", output.stdout)
+    except subprocess.CalledProcessError as e:
+        print("STDERR:", e.stderr)
+        raise e
+
+
+run(["apt-get", "install", "-y", "python3-boto3"])
 import boto3
 
 
@@ -23,7 +38,7 @@ def store_parameter(
     param_type: Literal["String", "SecureString"],
     region_name: str,
 ):
-    """store parameter in store to expose to K3s agents"""
+    """store parameter to expose to K3s agents"""
     name = f"/lmrun/{suffix}"
     print(f"put {name} in parameter store..")
     boto3.client("ssm", region_name=region_name).put_parameter(
@@ -38,8 +53,8 @@ def instance_metadata(slug: str = "public-ipv4"):
     """return instance metadata with authorized IMDSv2 scheme"""
     URL = "http://169.254.169.254/latest/"
 
-    # get a token, max session length: 6 hours
-    token_headers = {"X-aws-ec2-metadata-token-ttl-seconds": "21600"}
+    # get a token, TTL must be specified (max 21600)
+    token_headers = {"X-aws-ec2-metadata-token-ttl-seconds": "60"}
     token = requests.put(URL + "api/token", headers=token_headers, timeout=2).text
 
     # use the token to get metadata
@@ -51,23 +66,29 @@ def instance_metadata(slug: str = "public-ipv4"):
 if __name__ == "__main__":
     cluster_info = json.loads(os.environ["SKYPILOT_CLUSTER_INFO"])
     cluster_name, region = cluster_info["cluster_name"], cluster_info["region"]
+    k3s_command = [
+        "curl",
+        "-sfL",
+        "https://get.k3s.io",
+        "|",
+        "sh",
+        "-s",
+        "-",
+        "--flannel-external-ip",
+        "--flannel-backend=wireguard-native",
+        "--write-kubeconfig-mode=644",
+    ]
 
     k3s_token = generate_k3s_token()
     store_parameter(cluster_name + "/token", k3s_token, "SecureString", region)
+    k3s_command += ["--token=" + k3s_token]
 
     private_ip = gethostbyname(gethostname())
     store_parameter(cluster_name + "/ip/private", private_ip, "String", region)
+    k3s_command += ["--advertise-address=" + private_ip]
 
     public_ip = instance_metadata(slug="public-ipv4")
     store_parameter(cluster_name + "/ip/public", public_ip, "String", region)
+    k3s_command += ["--node-external-ip=" + public_ip]
 
-    # set environment variables on local system
-    exports = [
-        "K3S_TOKEN=" + k3s_token,
-        "INT_K3S_URL=" + private_ip,
-        "EXT_K3S_URL=" + public_ip,
-    ]
-    print("adding variables to /etc/environment..")
-    for export in exports:
-        with open("/etc/environment", "a", encoding="utf-8") as env_file:
-            env_file.write(export + "\n")
+    run(" ".join(k3s_command), shell=True)

@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# this script must run as the sky user to locate credentials
+if [ "$(whoami)" = "root" ]; then
+    echo "This script must NOT be run as root" >&2
+    exit 1
+fi
+
 DIR=~/.config/rclone
 CONF=$DIR/rclone.conf
 R2_DOMAIN=r2.cloudflarestorage.com

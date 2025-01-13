@@ -30,27 +30,27 @@ Two sizes of the same model show how to bring data to compute over the internet 
 *small ~ 16-GiB model (tested 8B), up to 50 GiB depending on throttle tolerance*
 > Bigger models (>= 50 GiB, tested 32B, limit may be lower) require premium storage distribution with the more generic `vllm.yaml` template in section below.
 
-Let's declare a Hugging Face repository and its latest commit hash:
+Let's export a Hugging Face repository and its latest commit hash:
 ```bash
-MODEL=Qwen/Qwen2.5-Coder-7B-Instruct
+export MODEL=Qwen/Qwen2.5-Coder-7B-Instruct
 # uploads push the latest, the version is then explicitly specified to run the model
-VERSION=0eb6b1ed2d0c4306bc637d09ecef51e59d3dfe05
+export VERSION=c03e6d358207e414f1eca0bb1891e29f1db0e242
 ```
 - **Upload** a model to an R2 bucket to make it available for global inference. 
 ```bash
-sky launch hf-to-r2.yaml --env REPO=$MODEL -i 5 --down
+sky launch hf-to-r2.yaml --env MODEL -i 5 --down
 ```
-`-i 5 --down` shuts down the upload server after 5 minutes of inactivity. Typically, the model would be custom or private. Otherwise, load it directly from Hugging Face with `vllm.yaml`, like the spot instance example below.
+`-i 5 --down` shuts down the upload server after 5 minutes of inactivity. Typically, the model would be custom or private. Otherwise, you can also load it directly from Hugging Face with `vllm.yaml`, like the spot instance example below. Note that observed loading times are much faster from R2 (~2m).
 - **Serve** the LLM you just staged, the version is in the R2 bucket path. `vllm-7B.yaml` is only suitable for small models, as they're loaded through a mounted R2 bucket with limited throughput above this transfer size (Cloudflare runs smaller models on the edge):
 ```bash
-sky launch vllm-7B.yaml --env MODEL=$MODEL --env VERSION=$VERSION -c vllm
+sky launch vllm-7B.yaml --env MODEL --env VERSION -c vllm
 ```
 - **Call** your LLM server:
 
 To remain secure, this simple setup requires a SSH tunnel for remote requests: `ssh -L 8000:localhost:8000 vllm`. Example request from your local machine or on the server:
 ```
 curl http://localhost:8000/v1/chat/completions -H "Content-Type: application/json" -d '{
-  "model": "/r2/model/Qwen/Qwen2.5-Coder-7B-Instruct/0eb6b1ed2d0c4306bc637d09ecef51e59d3dfe05",
+  "model": "/r2/model/Qwen/Qwen2.5-Coder-7B-Instruct/c03e6d358207e414f1eca0bb1891e29f1db0e242",
   "messages": [
     {"role": "system", "content": "You are a helpful code assistant."},
     {"role": "user", "content": "Can you keep coding while I grab a coffee?"}
@@ -69,17 +69,17 @@ They are two ways to run workloads on cheap but preemptible VMs with up to 90% d
 
 As a regular task, a preempted spot instance doesn't recover. It's still often worth it. Save results, checkpoints or data in the bucket folder `/r2` to protect against random termination.
 
-Let's declare a Hugging Face repository with a bigger model:
+Let's declare a bigger Hugging Face model:
 ```bash
-MODEL=Qwen/Qwen2.5-Coder-32B-Instruct
-VERSION=b47205940b83b5b484577359f71ee7b88472df67
+export MODEL=Qwen/Qwen2.5-Coder-32B-Instruct
+export VERSION=b47205940b83b5b484577359f71ee7b88472df67
 ```
 Notice we added `--use-spot` to `sky launch`. We request accelerators with `--gpus` outside the template to make it obvious that `-tp`, short for `--tensor-parallel-size`, must split tensors across 4 GPUs. This option is passed to `vllm serve`. 
 
 At the time of writing, 3 regions offer this spot configuration for less than $1/hour, instead of $5 to $6 on demand. Look up SkyPilot catalog in `~/.sky/catalogs/v*/aws/vms.csv`, identify these regions and request [quotas](/mesh/README.md#quotas) for them.
 ```bash
 (lmrun-py3.11) workspace % sky launch vllm.yaml -c vllm --gpus L4:4 --use-spot \
-    --env MODEL=$MODEL --env VERSION=$VERSION --env SERVE_OPTS="-tp 4"
+    --env MODEL --env VERSION --env SERVE_OPTS="-tp 4"
 Task from YAML spec: vllm.yaml
 Considered resources (1 node):
 ----------------------------------------------------------------------------------------------------
@@ -138,3 +138,4 @@ If you're already familiar with S3, R2 is a more efficient substitute for LMRun 
 2. On Cloudflare, go to “R2 Object Storage” in the left-side menu > “Create bucket” > Call it “lmrun” and click “Create bucket”.
 3. Configure R2 as described in SkyPilot [doc](https://docs.skypilot.co/en/latest/getting-started/installation.html#cloudflare-r2). When creating the API token, restrict permissions to "Object Read & Write" and apply to the `lmrun` bucket only. Note that all values you need, incl. the Cloudflare Account ID, are on the final screen. The account is the first part of the URL in `https://<Your Account ID>.r2.cloudflarestorage.com`.
 4. Check your configuration with `sky check`: the command should output "Cloudflare (for R2 object store): enabled" in green.
+5. Execute `./setup/r2-sync.sh` to upload setup scripts to your bucket.
