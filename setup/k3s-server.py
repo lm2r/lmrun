@@ -7,11 +7,13 @@ from typing import Literal
 import secrets
 import string
 from socket import gethostbyname, gethostname
-import requests
 import subprocess
+import requests
 
 
 def run(command: list[str], shell=False):
+    """run a shell command from a list of strings, unless shell=True:
+    i.e. command is a string and special characters are interpreted in a shell"""
     try:
         output = subprocess.run(
             command, shell=shell, check=True, capture_output=True, text=True
@@ -22,8 +24,9 @@ def run(command: list[str], shell=False):
         raise e
 
 
+run(["apt-get", "update"])
 run(["apt-get", "install", "-y", "python3-boto3"])
-import boto3
+import boto3  # pylint: disable=wrong-import-position
 
 
 def generate_k3s_token(length=48):
@@ -63,9 +66,29 @@ def instance_metadata(slug: str = "public-ipv4"):
     return requests.get(metadata_url, headers=metadata_headers, timeout=2).text
 
 
+def connection_options():
+    """set K3s command flags to connect agents"""
+    opts = []
+
+    k3s_token = generate_k3s_token()
+    store_parameter(cluster_name + "/token", k3s_token, "SecureString", region)
+    opts += ["--token=" + k3s_token]
+
+    private_ip = gethostbyname(gethostname())
+    store_parameter(cluster_name + "/ip/private", private_ip, "String", region)
+    opts += ["--advertise-address=" + private_ip]
+
+    public_ip = instance_metadata(slug="public-ipv4")
+    store_parameter(cluster_name + "/ip/public", public_ip, "String", region)
+    opts += ["--node-external-ip=" + public_ip]
+
+    return opts
+
+
 if __name__ == "__main__":
     cluster_info = json.loads(os.environ["SKYPILOT_CLUSTER_INFO"])
     cluster_name, region = cluster_info["cluster_name"], cluster_info["region"]
+
     k3s_command = [
         "curl",
         "-sfL",
@@ -74,21 +97,11 @@ if __name__ == "__main__":
         "sh",
         "-s",
         "-",
+        "server",
         "--flannel-external-ip",
         "--flannel-backend=wireguard-native",
         "--write-kubeconfig-mode=644",
     ]
 
-    k3s_token = generate_k3s_token()
-    store_parameter(cluster_name + "/token", k3s_token, "SecureString", region)
-    k3s_command += ["--token=" + k3s_token]
-
-    private_ip = gethostbyname(gethostname())
-    store_parameter(cluster_name + "/ip/private", private_ip, "String", region)
-    k3s_command += ["--advertise-address=" + private_ip]
-
-    public_ip = instance_metadata(slug="public-ipv4")
-    store_parameter(cluster_name + "/ip/public", public_ip, "String", region)
-    k3s_command += ["--node-external-ip=" + public_ip]
-
+    k3s_command += connection_options()
     run(" ".join(k3s_command), shell=True)

@@ -18,7 +18,6 @@ boto3 = "^1.35.96"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.10.0"
-flake8 = "^7.1.1"
 # Downgrade pylint: 3.3.3 depends on colorama (>=0.4.5)
 # -> skypilot[aws] (0.7.0) depends on colorama (<0.4.5)
 pylint = "^2"

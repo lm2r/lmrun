@@ -1,7 +1,0 @@
-# Flake8 doesn't support pyproject.toml
-[flake8]
-extend-exclude = .venv
-# E501: ignore the line length check to leave it to black
-# -> flake8 can still disagree on edge cases when aligning the limit with black
-# W503: line break before binary operator conflicting with black formatting
-ignore = E501,W503
