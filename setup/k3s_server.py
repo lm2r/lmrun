@@ -12,7 +12,7 @@ import requests
 
 
 def run(command: list[str], shell=False):
-    """run a shell command from a list of strings, unless shell=True:
+    """Run a shell command from a list of strings, unless shell=True:
     i.e. command is a string and special characters are interpreted in a shell"""
     try:
         output = subprocess.run(
@@ -30,7 +30,7 @@ import boto3  # pylint: disable=wrong-import-position
 
 
 def generate_k3s_token(length=48):
-    """generate a secure random token for K3s"""
+    """Generate a secure random token for K3s"""
     alphabet = string.ascii_letters + string.digits
     return "".join(secrets.choice(alphabet) for _ in range(length))
 
@@ -41,7 +41,7 @@ def store_parameter(
     param_type: Literal["String", "SecureString"],
     region_name: str,
 ):
-    """store parameter to expose to K3s agents"""
+    """Store parameter to expose to K3s agents"""
     name = f"/lmrun/{suffix}"
     print(f"put {name} in parameter store..")
     boto3.client("ssm", region_name=region_name).put_parameter(
@@ -53,7 +53,7 @@ def store_parameter(
 
 
 def instance_metadata(slug: str = "public-ipv4"):
-    """return instance metadata with authorized IMDSv2 scheme"""
+    """Return instance metadata with authorized IMDSv2 scheme"""
     URL = "http://169.254.169.254/latest/"
 
     # get a token, TTL must be specified (max 21600)
@@ -67,7 +67,7 @@ def instance_metadata(slug: str = "public-ipv4"):
 
 
 def connection_options():
-    """set K3s command flags to connect agents"""
+    """Set K3s command flags to connect agents"""
     opts = []
 
     k3s_token = generate_k3s_token()
@@ -105,3 +105,7 @@ if __name__ == "__main__":
 
     k3s_command += connection_options()
     run(" ".join(k3s_command), shell=True)
+
+    with open("/etc/rancher/k3s/k3s.yaml", "r", encoding="utf-8") as file:
+        kubeconfig = file.read()
+    store_parameter(cluster_name + "/kubeconfig", kubeconfig, "SecureString", region)

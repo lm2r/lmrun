@@ -11,7 +11,7 @@ resources:
   disk_size: 16
 
 file_mounts:
-  /scripts/k3s-server.py: ../setup/k3s-server.py
+  /scripts/k3s_server.py: ../setup/k3s_server.py
 
 # sudo -E to preserve the environment, e.g. SKYPILOT_CLUSTER_INFO
-setup: sudo -E /scripts/k3s-server.py
+setup: sudo -E /scripts/k3s_server.py

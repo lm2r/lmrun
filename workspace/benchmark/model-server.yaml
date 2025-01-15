@@ -12,16 +12,17 @@ envs:
   VERSION: 
   # vLLM serve CLI options passed in a single quoted string
   SERVE_OPTS: "-tp 4"
-  # region where the main K3s server is hosted to get connection details
+  # region where the main K3s server is hosted to retrieve cluster connection details
   AWS_DEFAULT_REGION: us-east-1
 
 file_mounts:
   /r2:
     source: r2://lmrun
 
+# --port 8000 creates a Kubernetes service to proxy inference requests to vLLM
 setup: |
-  install -m 755 /r2/setup/{k3s-agent.py,vllm-conda-install.sh} .
-  sudo -E ./k3s-agent.py
+  install -m 755 /r2/setup/{k3s_agent*,vllm-conda-install.sh} .
+  sudo -E ./k3s-agent.py --port 8000
   ./vllm-conda-install.sh
 
 # 'auto' generation config loads it from the model
