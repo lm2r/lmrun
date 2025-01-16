@@ -43,7 +43,7 @@ def store_parameter(
 ):
     """Store parameter to expose to K3s agents"""
     name = f"/lmrun/{suffix}"
-    print(f"put {name} in parameter store..")
+    print(f"Put {name} in parameter store..")
     boto3.client("ssm", region_name=region_name).put_parameter(
         Name=name,
         Value=value,

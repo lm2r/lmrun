@@ -6,7 +6,7 @@ import json
 from socket import gethostbyname, gethostname
 import argparse
 import requests
-from k3s_agent_util import run, host_service
+from k3s_agent_util import run, k3s_dns, host_service, cleanup_command
 
 
 run(["apt-get", "update"])
@@ -28,7 +28,7 @@ def read_port_arg():
 def get_parameter(suffix: str):
     """Get server parameters to connect K3s agents"""
     name = f"/lmrun/{suffix}"
-    print(f"get {name} from parameter store..")
+    print(f"Get {name} from parameter store..")
     # no region_name, relying on AWS_DEFAULT_REGION where the server is located
     return boto3.client("ssm").get_parameter(
         Name=name,
@@ -95,16 +95,23 @@ if __name__ == "__main__":
     k3s_command = ["curl", "-sfL", "https://get.k3s.io", "|", "sh", "-s", "-", "agent"]
     options, k3s_server_ip = connection_options(cloud_name, label)
     k3s_command += options
+
     run(" ".join(k3s_command), shell=True)
+    k3s_dns()
 
     port = read_port_arg()
     if port:
-        print(f"Exposing a host service to the K3s cluster on port {port}..")
         kubeconfig = get_parameter(K3S_SERVER_NAME + "/kubeconfig")
+
         kube_dir = os.path.expanduser("~/.kube")
         os.makedirs(kube_dir, exist_ok=True)
         with open(os.path.join(kube_dir, "config"), "w", encoding="utf-8") as file:
             file.write(kubeconfig.replace("127.0.0.1", k3s_server_ip))
+
         host_service(label, port)
     else:
         print("Skipping service creation: --port isn't defined")
+
+    # delete previous record of the same node, if any, to clean and free service pods
+    print(f"Checking for a previous node with label lmrun={label}..")
+    run(cleanup_command(label), shell=True)

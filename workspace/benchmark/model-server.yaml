@@ -21,8 +21,9 @@ file_mounts:
 
 # --port 8000 creates a Kubernetes service to proxy inference requests to vLLM
 setup: |
+  set -ex
   install -m 755 /r2/setup/{k3s_agent*,vllm-conda-install.sh} .
-  sudo -E ./k3s-agent.py --port 8000
+  sudo -E ./k3s_agent.py --port 8000
   ./vllm-conda-install.sh
 
 # 'auto' generation config loads it from the model

@@ -4,7 +4,7 @@ jobs:
       cloud: aws
       region: us-east-1
       # default: 4+
-      cpus: 1+  # number of vCPUs, max concurrent spot jobs = 2 * cpus
+      cpus: 2+  # number of vCPUs, max concurrent spot jobs = 2 * cpus
       # default: 100
       disk_size: 25
 
