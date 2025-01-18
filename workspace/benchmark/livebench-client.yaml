@@ -1,0 +1,42 @@
+name: benchmark
+
+resources:
+  cloud: aws
+  # already default: added to clarify best practice minimizing latency
+  region: us-east-1  # CPU-based clients and middleware run in the main region 
+  cpus: 2+
+  memory: 8+
+  disk_size: 32
+
+envs:
+  # region where the main K3s node is hosted to retrieve cluster connection details
+  AWS_DEFAULT_REGION: us-east-1  # boto3 relies on this variables in k3s_agent.py
+  BENCH_OPTS: "--bench-name live_bench/coding --livebench-release-option 2024-11-25"
+  SERVER:
+
+file_mounts:
+  /r2:
+    source: r2://lmrun
+
+# 1. install cluster agent
+# 2. install LiveBench
+setup: |
+  install -m 755 /r2/setup/k3s_agent* .
+  sudo -E ./k3s_agent.py
+
+  python -m venv .venv
+  source .venv/bin/activate
+  git clone --depth 1 https://github.com/LiveBench/LiveBench.git
+  pip install -e LiveBench
+
+# 1. generate answers
+# 2. score
+# 3. show results
+run: |
+  source .venv/bin/activate
+  python LiveBench/livebench/gen_api_answer.py $BENCH_OPTS \
+      --api-base http://$SERVER.default.svc.cluster.local:8000/v1 --model $SERVER
+
+  python LiveBench/livebench/gen_ground_truth_judgment.py $BENCH_OPTS --model $SERVER
+
+  python LiveBench/livebench/show_livebench_result.py $BENCH_OPTS --model $SERVER

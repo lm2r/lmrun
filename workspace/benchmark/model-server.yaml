@@ -26,8 +26,10 @@ setup: |
   sudo -E ./k3s_agent.py --port 8000
   ./vllm-conda-install.sh
 
+# add '-r' to jq to exclude quotes from model name and fix "model name not found"
 # 'auto' generation config loads it from the model
 run: |
   conda activate vllm
-  vllm serve $SERVE_OPTS --gpu-memory-utilization 1 \
-      --generation-config auto --revision $VERSION $MODEL
+  model_name=`echo $SKYPILOT_CLUSTER_INFO | jq -r .cluster_name`
+  vllm serve $SERVE_OPTS --gpu-memory-utilization 1 --generation-config auto \
+      --served-model-name $model_name --revision $VERSION $MODEL
