@@ -126,7 +126,7 @@ sky launch hf-to-private.yaml -i 5 --down \
 ---
 ### Advanced
 Explore more advanced examples in folders.
-- `benchmark`: discover features of the LMRun cluster mesh
+- `benchmark`: discover the LMRun cluster mesh
 - `fine-tune`: *coming soon*
 
 ## Cloudflare R2 storage

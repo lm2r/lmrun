@@ -1,4 +1,4 @@
-"""Kubernetes manifest to set up service discovery of host services
+"""Kubernetes manifest to set up cluster-wide discovery of host services
 
 Import with the main script in task setup: `install -m 755 /r2/setup/k3s_agent*`
 """

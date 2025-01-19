@@ -7,4 +7,4 @@
  export AWS_PROFILE=r2
 
 git_root=`git rev-parse --show-toplevel`
-aws s3 sync $git_root/setup s3://lmrun/setup --exclude "*sync-r2.sh*"
+aws s3 sync $git_root/setup s3://lmrun/setup --exclude "*r2-sync.sh*"
