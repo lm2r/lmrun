@@ -20,10 +20,11 @@ file_mounts:
     source: r2://lmrun
 
 # --port 8000 creates a Kubernetes service to proxy inference requests to vLLM
+# --namespace is the service subdomain: <cluster name>.<namespace>.svc.cluster.local
 setup: |
   set -ex
   install -m 755 /r2/setup/{k3s_agent*,vllm-conda-install.sh} .
-  sudo -E ./k3s_agent.py --port 8000
+  sudo -E ./k3s_agent.py --port 8000 --namespace benchmark
   ./vllm-conda-install.sh
 
 # add '-r' to jq to exclude quotes from model name and fix "model name not found"

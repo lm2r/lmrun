@@ -20,13 +20,13 @@ In the setup section of the server template `model-server.yaml`, we append `--po
 - Execute `./run-qwen-coder.sh` or `./run-sky-t1.sh` to launch one of these 2 models on the K3s cluster. These scripts are simple wrappers around `model-server.yaml`.
 
 ### Connecting to a service
-By default, you only need to know the name of a service to connect to it because its address is `<SERVICE NAME>.default.svc.cluster.local`.
+By default, you only need to know the name of a service to connect to it because its address is `<SERVICE NAME>.default.svc.cluster.local`. However, when `k3s_agent.py` is configured with `--namespace` in addition to `--port`, this namespace maps to the URL subdomain and replaces `default`.   
 
-In the previous example, the server address will be `qwen-coder.default.svc.cluster.local`. That's why we only pass this name to the `SERVER` variable of the client.
+In the previous example, the server address is `qwen-coder.benchmark.svc.cluster.local`. The client reconstructs the vLLM server's API base `http://$SERVER.$DOMAIN.svc.cluster.local:8000/v1` from these 2 variables `SERVER` and `DOMAIN`.
 ```bash
-sky launch -c client livebench-client.yaml --env SERVER=qwen-coder -i 5 --down
+sky launch -c client livebench-client.yaml --env SERVER=qwen-coder --env DOMAIN=benchmark
 ```
-Take the server down once the task completed and displayed results: `sky down qwen-coder`.
+Take VMs down once the task completed and displayed results: `sky down qwen-coder client`.
 
 ## Managed Spot Jobs
 *coming soon*

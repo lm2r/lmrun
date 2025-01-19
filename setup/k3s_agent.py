@@ -6,7 +6,7 @@ import json
 from socket import gethostbyname, gethostname
 import argparse
 import requests
-from k3s_agent_util import run, k3s_dns, host_service, cleanup_command
+from k3s_agent_command import run, set_k3s_dns_on_host, host_service, dupe_node_cleanup
 
 
 run(["apt-get", "update"])
@@ -16,13 +16,13 @@ import boto3  # pylint: disable=wrong-import-position
 K3S_SERVER_NAME = "main"
 
 
-def read_port_arg():
-    """Parse optional port argument"""
+def service_args():
+    """Parse optional service arguments --port & --namespace"""
     parser = argparse.ArgumentParser()
-    # nullish default value (0) to apply a service if set
-    parser.add_argument("--port", type=int, default=0)
-    args = parser.parse_args()
-    return args.port
+    # nullish default value (0) to apply a service after an if condition when set
+    parser.add_argument("--port", "-p", type=int, default=0)
+    parser.add_argument("--namespace", "-n", type=str, default="default")
+    return parser.parse_args()
 
 
 def get_parameter(suffix: str):
@@ -95,23 +95,22 @@ if __name__ == "__main__":
     k3s_command = ["curl", "-sfL", "https://get.k3s.io", "|", "sh", "-s", "-", "agent"]
     options, k3s_server_ip = connection_options(cloud_name, label)
     k3s_command += options
-
     run(" ".join(k3s_command), shell=True)
-    k3s_dns()
 
-    port = read_port_arg()
-    if port:
-        kubeconfig = get_parameter(K3S_SERVER_NAME + "/kubeconfig")
+    kubeconfig = get_parameter(K3S_SERVER_NAME + "/kubeconfig")
+    kube_dir = os.path.expanduser("~/.kube")
+    os.makedirs(kube_dir, exist_ok=True)
+    with open(os.path.join(kube_dir, "config"), "w", encoding="utf-8") as file:
+        file.write(kubeconfig.replace("127.0.0.1", k3s_server_ip))
 
-        kube_dir = os.path.expanduser("~/.kube")
-        os.makedirs(kube_dir, exist_ok=True)
-        with open(os.path.join(kube_dir, "config"), "w", encoding="utf-8") as file:
-            file.write(kubeconfig.replace("127.0.0.1", k3s_server_ip))
+    # delete previous records of the same node, if any, to clean and free service pods
+    print(f"Checking for previous nodes with label lmrun={label}..")
+    dupe_node_cleanup(label)
 
-        host_service(label, port)
+    set_k3s_dns_on_host()
+
+    args = service_args()
+    if args.port:
+        host_service(label, args.port, args.namespace)
     else:
         print("Skipping service creation: --port isn't defined")
-
-    # delete previous record of the same node, if any, to clean and free service pods
-    print(f"Checking for a previous node with label lmrun={label}..")
-    run(cleanup_command(label), shell=True)
