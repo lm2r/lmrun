@@ -1,4 +1,5 @@
 jobs:
+  bucket: r2://lmrun
   controller:
     resources:  # same spec as 'resources' in a task YAML
       cloud: aws

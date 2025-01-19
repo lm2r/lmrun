@@ -2,8 +2,8 @@ name: benchmark
 
 resources:
   cloud: aws
-  # already default: added to clarify best practice minimizing latency
-  region: us-east-1  # CPU-based clients and middleware run in the main region 
+  # already default: added to clarify requirement on the internal AWS network
+  region: us-east-1  # CPU VMs connected to GPU VMs run in the main region 
   cpus: 2+
   memory: 8+
   disk_size: 32
