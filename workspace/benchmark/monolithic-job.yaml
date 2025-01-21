@@ -1,0 +1,67 @@
+name: monolithic-benchmark
+
+resources:
+  accelerators: L4:4
+  use_spot: True
+  disk_size: 128
+
+envs:
+  # Hugging Face repo id 'namespace/repo_name'
+  MODEL:
+  # model version: commit hash from model repository
+  VERSION: 
+  SERVE_OPTS: "-tp 4"
+  BENCH_OPTS: "--bench-name live_bench/coding --livebench-release-option 2024-11-25"
+  # region where the main K3s server is hosted to retrieve cluster connection details
+  AWS_DEFAULT_REGION: us-east-1
+
+file_mounts:
+  /r2:
+    source: r2://lmrun
+
+# limits hit by DeepSeek-R1-Distill-Qwen-32B on L4:4 w/ default generation config:
+# - lowered gpu-memory-utilization to fix out-of-memory error during cudagraph capture
+# - --max-model-len limits large contexts for config. compatibility across models     
+setup: |
+  set -ex
+  install -m 755 /r2/setup/{k3s_agent*,vllm-conda-install.sh} .
+  sudo -E ./k3s_agent.py
+  ./vllm-conda-install.sh
+
+  conda activate vllm
+  model=`basename $MODEL`
+  nohup vllm serve $SERVE_OPTS --gpu-memory-utilization 0.94 \
+      --generation-config auto --max-model-len 31120 \
+      --served-model-name $model --revision $VERSION $MODEL > vllm.log 2>&1 &
+
+  echo "* * * * * rsync -av sky_workdir/data/ /r2/LiveBench >> rsync.log 2>&1" | 
+      crontab -
+
+# empty $cc_dir/$model.jsonl & $lcb_dir/$model.jsonl to start LiveBench w/ --resume
+run: |
+  set -e
+  model=`basename $MODEL`
+
+  python -m venv .venv
+  source .venv/bin/activate
+  git clone --depth 1 https://github.com/LiveBench/LiveBench.git
+  pip install -e LiveBench
+
+  cc_dir=data/live_bench/coding/coding_completion/model_answer
+  lcb_dir=data/live_bench/coding/LCB_generation/model_answer
+  mkdir -p /r2/LiveBench $cc_dir $lcb_dir
+  rsync -av /r2/LiveBench/ data
+  touch $cc_dir/$model.jsonl $lcb_dir/$model.jsonl
+
+  while ! nc -z localhost 8000; do 
+    echo "LiveBench is waiting for vLLM.."
+    echo
+    tail -3 vllm.log
+    echo
+    sleep 1
+  done
+
+  python LiveBench/livebench/gen_api_answer.py --resume $BENCH_OPTS \
+    --api-base http://localhost:8000/v1 --model $model
+  python LiveBench/livebench/gen_ground_truth_judgment.py $BENCH_OPTS --model $model
+  python LiveBench/livebench/show_livebench_result.py $BENCH_OPTS --model $model
