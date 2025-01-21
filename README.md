@@ -8,9 +8,9 @@ AI R&D platform as a SkyPilot distribution incl. cloud infra, networking & servi
 - Global network of multiple clouds for better availability and cheaper compute
 - Open stack: work with any tool or framework on cloud-agnostic infrastructure
 - No data lock-in: free or low-cost egress bandwidth for high throughput
-- Deploy on hyperscalers (AWS) for enterprise-grade integrations and services
+- Expand hyperscaler accounts (AWS) to outsource AI compute
 
-> Thanks to SkyPilot, LMRun delivers agile AI computing.
+> LMRun integrates SkyPilot clusters and multiple clouds into a single environment.
 
 ## Quickstart
 1. Set up your [local environment](#local-environment).
