@@ -11,16 +11,20 @@ from k3s_agent_manifest import host_service_template
 def run(command: list[str] | str, shell=False):
     """Run a shell command from a list of strings, unless shell=True:
     i.e. command is a string and special characters are interpreted in a shell"""
-    try:
-        output = subprocess.run(
-            command, shell=shell, check=True, capture_output=True, text=True
-        )
-        # commands like `systemctl restart` don't produce output unless they error out
-        if output.stdout:
-            print("STDOUT:", output.stdout)
-    except subprocess.CalledProcessError as e:
-        print("STDERR:", e.stderr)
-        raise e
+    with subprocess.Popen(
+        command,
+        shell=shell,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        bufsize=1,
+    ) as process:
+        for line in process.stdout:
+            print(line.strip())
+        process.wait()
+        if process.returncode != 0:
+            print("STDERR:", process.stderr)
+            raise subprocess.CalledProcessError(process.returncode, command)
 
 
 def set_k3s_dns_on_host():
