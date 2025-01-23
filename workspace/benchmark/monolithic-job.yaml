@@ -24,7 +24,7 @@ file_mounts:
 # - --max-model-len limits large contexts for config. compatibility across models     
 setup: |
   set -ex
-  install -m 755 /r2/setup/{k3s_agent*,vllm-conda-install.sh} .
+  install -m 755 /r2/setup/{k3s_*,vllm-conda-install.sh} .
   sudo -E ./k3s_agent.py
   ./vllm-conda-install.sh
 
@@ -39,7 +39,6 @@ setup: |
 
 # empty $cc_dir/$model.jsonl & $lcb_dir/$model.jsonl to start LiveBench w/ --resume
 run: |
-  set -e
   model=`basename $MODEL`
 
   python -m venv .venv

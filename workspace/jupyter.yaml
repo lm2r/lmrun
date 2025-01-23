@@ -4,6 +4,7 @@ resources:
   instance_type: g6.xlarge
 
 setup: |
+  set -e
   conda init bash
   conda create -n jupyter python=3.12 -y
   conda activate jupyter

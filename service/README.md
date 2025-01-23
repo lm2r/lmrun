@@ -1,7 +1,10 @@
 # Sky Services
-multi-cloud MLOps services
+> multi-cloud MLOps services
 
-- `sky launch -c main main.yaml` to launch the main K3s cluster node
+Any VM initialized with `k3s_server.py` is a main K3s node. Any VM initialized with `k3s_agent.py` is a K3s agent. There is only a single active main node at a time and agents always connect to the most recent. The main node should always be provisioned first and decommissioned last to preserve the LMRun cluster integrity. Finally, agents expect a main node launched with `sky launch -c main`, as defined by `K3S_SERVER_NAME` in `k3s_agent.py`. 
+
+- `sky launch -c main main.yaml` to launch a minimal main K3s node
+- `sky launch -c main main-phoenix.yaml` to include a [Phoenix](https://phoenix.arize.com) server cohosted with the main K3s node
 
 ## Fixed private IPs
 *power users only*
@@ -19,12 +22,10 @@ resources:
   # etc
   zone: us-east-1a  # zone to allocate a fixed IP
 ``` 
-2. Attach the network interface to your instance in the same zone. By default, network interfaces are listed in [us-east-1.console.aws.amazon.com/ec2/home#NIC](https://us-east-1.console.aws.amazon.com/ec2/home#NIC).
+2. Attach the network interface to your instance in the same zone. By default, network interfaces are listed in [us-east-1.console.aws.amazon.com/ec2/home#NIC](https://us-east-1.console.aws.amazon.com/ec2/home#NIC). Attaching the network interface to an instance isn't handled by LMRun.
 3. Configure this fixed IP in internal clients. It is always `10.4.x.4` where `x` is the subnet block: one of `0`, `32`, `64`, `96`, `128` or `160`.
 ```yaml
 envs:
   # see zone in <server>.yaml to determine the subnet, e.g. 10.4.0.x
   MLOPS_IP: 10.4.0.4  # always 5th IP (.4) in subnet
-```
-
-Note: how to attach the network interface to an instance is up to you. 
+``` 

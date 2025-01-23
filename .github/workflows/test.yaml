@@ -24,6 +24,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - name: lmrun/setup doctests
+        run: python setup/test_* -v
       - name: Install venv
         run: |
           pip install poetry

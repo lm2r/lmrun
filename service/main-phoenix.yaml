@@ -1,0 +1,26 @@
+# main K3s server: cluster entry point for all VMs + cohosted Phoenix server
+name: main-phoenix
+
+resources:
+  cloud: aws
+  region: us-east-1
+  cpus: 2+
+  memory: 4+
+  disk_size: 16
+
+file_mounts:
+  /r2:
+    source: r2://lmrun
+
+setup: |
+  set -e
+  install -m 755 /r2/setup/k3s_* .
+  sudo -E ./k3s_server.py --ports 6006,4317
+
+  python -m venv .phoenix_env
+  source .phoenix_env/bin/activate
+  pip install arize-phoenix
+
+run: |
+  source .phoenix_env/bin/activate
+  phoenix serve

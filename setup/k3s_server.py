@@ -7,22 +7,8 @@ from typing import Literal
 import secrets
 import string
 from socket import gethostbyname, gethostname
-import subprocess
 import requests
-
-
-def run(command: list[str], shell=False):
-    """Run a shell command from a list of strings, unless shell=True:
-    i.e. command is a string and special characters are interpreted in a shell"""
-    try:
-        output = subprocess.run(
-            command, shell=shell, check=True, capture_output=True, text=True
-        )
-        print("STDOUT:", output.stdout)
-    except subprocess.CalledProcessError as e:
-        print("STDERR:", e.stderr)
-        raise e
-
+from k3s_command import run, service_config, set_k3s_dns_on_host
 
 run(["apt-get", "update"])
 run(["apt-get", "install", "-y", "python3-boto3"])
@@ -101,6 +87,7 @@ if __name__ == "__main__":
         "--flannel-external-ip",
         "--flannel-backend=wireguard-native",
         "--write-kubeconfig-mode=644",
+        "--node-label=lmrun=" + cluster_name,
     ]
 
     k3s_command += connection_options()
@@ -109,3 +96,6 @@ if __name__ == "__main__":
     with open("/etc/rancher/k3s/k3s.yaml", "r", encoding="utf-8") as file:
         kubeconfig = file.read()
     store_parameter(cluster_name + "/kubeconfig", kubeconfig, "SecureString", region)
+
+    service_config(cluster_name)  # host label is the cluster name on main node
+    set_k3s_dns_on_host()

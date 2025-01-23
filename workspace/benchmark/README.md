@@ -17,7 +17,7 @@ We first [connect](#service--client-vms) example workloads below by running a be
 > Regional VPCs are only peered with the main region and peering connections are not transitive (VPC A and B are not connected when both peered with C). Therefore, to establish direct node connections within a global, yet private, AWS network, one of the 2 connected nodes must be in the main region. Outside AWS, nodes join the cluster through VPN tunnels attached to public IPs and connect to Kubernetes pod IPs mapping to individual VMs. 
 
 ### Creating a service
-In the setup section of the server template `model-server.yaml`, we append `--port 8000` to the cluster agent command `sudo -E ./k3s_agent.py` to expose a port as a VM service, in this case vLLM. The SkyPilot name for the server VM, `-c` in `sky launch`, is reused to name the service.
+In the setup section of `model-server.yaml`, we append `--port 8000` to the cluster agent command `sudo -E ./k3s_agent.py` to expose a port as a VM service, in this case vLLM. The SkyPilot name for the server VM, `-c` in `sky launch`, is reused to name the service.
 
 - Execute `./launch-32B.sh qwen-coder` to launch a default model on the K3s cluster. The script is a simple wrapper around `model-server.yaml`. To launch another model, you can override or edit default arguments, or use the CLI:
 ```bash

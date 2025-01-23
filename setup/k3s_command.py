@@ -5,7 +5,8 @@ Import with the main script in task setup: `install -m 755 /r2/setup/k3s_agent*`
 
 import os
 import subprocess
-from k3s_agent_manifest import host_service_template
+import argparse
+from k3s_host_service import build_manifest
 
 
 def run(command: list[str] | str, shell=False):
@@ -37,13 +38,9 @@ def set_k3s_dns_on_host():
     run(["systemctl", "restart", "systemd-resolved"])
 
 
-def host_service(host_label: str, port: int, namespace: str):
+def host_service(host_label: str, ports: str, namespace: str):
     """Expose a host service to the K3s cluster on specified port"""
-    service_yaml = (
-        host_service_template.replace("<LABEL>", host_label)
-        .replace("<PORT>", str(port))
-        .replace("<NAMESPACE>", namespace)
-    )
+    service_yaml = build_manifest(host_label, ports, namespace)
     # existing namespaced objects would be updated but other namespaces block the port
     print(f"Deleting duplicate {host_label} service & statefulset in any namespace..")
     run(
@@ -56,8 +53,21 @@ def host_service(host_label: str, port: int, namespace: str):
             "--all-namespaces",
         ]
     )
-    print(f"Exposing a {host_label} host service to the K3s cluster on port {port}..")
+    print(f"Exposing a {host_label} host service to the K3s cluster on ports {ports}")
     run(f'echo "{service_yaml}" | kubectl apply -f -', shell=True)
+
+
+def service_config(label: str):
+    """Parse arguments --port & --namespace to install optional service"""
+    parser = argparse.ArgumentParser()
+    # nullish default value ("") to apply a service when set after if condition below
+    parser.add_argument("--port", "-p", "--ports", type=str, default="")
+    parser.add_argument("--namespace", "-n", type=str, default="default")
+    args = parser.parse_args()
+    if args.port:
+        host_service(label, args.port, args.namespace)
+    else:
+        print("Skipping service creation: --port(s) isn't defined")
 
 
 def dupe_node_cleanup(label: str):

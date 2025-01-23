@@ -11,7 +11,11 @@ resources:
   disk_size: 16
 
 file_mounts:
-  /scripts/k3s_server.py: ../setup/k3s_server.py
+  /r2:
+    source: r2://lmrun
 
 # sudo -E to preserve the environment, e.g. SKYPILOT_CLUSTER_INFO
-setup: sudo -E /scripts/k3s_server.py
+setup: |
+  set -e
+  install -m 755 /r2/setup/k3s_* .
+  sudo -E ./k3s_server.py

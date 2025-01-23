@@ -4,9 +4,8 @@
 import os
 import json
 from socket import gethostbyname, gethostname
-import argparse
 import requests
-from k3s_agent_command import run, set_k3s_dns_on_host, host_service, dupe_node_cleanup
+from k3s_command import run, set_k3s_dns_on_host, service_config, dupe_node_cleanup
 
 
 run(["apt-get", "update"])
@@ -14,15 +13,6 @@ run(["apt-get", "install", "-y", "python3-boto3"])
 import boto3  # pylint: disable=wrong-import-position
 
 K3S_SERVER_NAME = "main"
-
-
-def service_args():
-    """Parse optional service arguments --port & --namespace"""
-    parser = argparse.ArgumentParser()
-    # nullish default value (0) to apply a service after an if condition when set
-    parser.add_argument("--port", "-p", type=int, default=0)
-    parser.add_argument("--namespace", "-n", type=str, default="default")
-    return parser.parse_args()
 
 
 def get_parameter(suffix: str):
@@ -106,11 +96,6 @@ if __name__ == "__main__":
     # delete previous records of the same node, if any, to clean and free service pods
     print(f"Checking for previous nodes with label lmrun={label}..")
     dupe_node_cleanup(label)
+    service_config(label)
 
     set_k3s_dns_on_host()
-
-    args = service_args()
-    if args.port:
-        host_service(label, args.port, args.namespace)
-    else:
-        print("Skipping service creation: --port isn't defined")
