@@ -37,7 +37,7 @@ setup: |
 run: |
   source .venv/bin/activate
   python LiveBench/livebench/gen_api_answer.py $BENCH_OPTS \
-      --api-base http://$SERVER.$DOMAIN.svc.cluster.local:8000/v1 --model $SERVER
+      --api-base http://$SERVER.$DOMAIN.svc.lm.run:8000/v1 --model $SERVER
 
   python LiveBench/livebench/gen_ground_truth_judgment.py $BENCH_OPTS --model $SERVER
 

@@ -64,6 +64,7 @@ default_allocations: list[Allocation] = [
     {"region": "us-east-2", "cidr_block": "10.29.0.0/16"},
     {"region": "us-west-1", "cidr_block": "10.30.0.0/16"},
     {"region": "us-west-2", "cidr_block": "10.31.0.0/16"},
+    # exclude k3s --cluster-cidr default "10.42.0.0/16"	reserved for pod IPs
 ]
 allocations = [
     alloc if alloc["region"] != main_region else main_allocation

@@ -26,9 +26,9 @@ sky launch model-server.yaml --env MODEL=NovaSky-AI/Sky-T1-32B-Preview \
 ```
 
 ### Connecting to a service
-By default, you only need to know the name of a service to connect to it because its address is `<SERVICE NAME>.default.svc.cluster.local`. However, when `k3s_agent.py` is configured with `--namespace` in addition to `--port`, this namespace maps to the URL subdomain and replaces `default`.   
+By default, you only need to know the name of a service to connect to it because its address is `<SERVICE NAME>.default.svc.lm.run`. However, when `k3s_agent.py` is configured with `--namespace` in addition to `--port`, this namespace maps to the URL subdomain and replaces `default`.   
 
-In the first example, the server address is `qwen-coder.benchmark.svc.cluster.local`. The client reconstructs the vLLM server's API base `http://$SERVER.$DOMAIN.svc.cluster.local:8000/v1` from these 2 variables `SERVER` and `DOMAIN`.
+In the first example, the server address is `qwen-coder.benchmark.svc.lm.run`. The client reconstructs the vLLM server's API base `http://$SERVER.$DOMAIN.svc.lm.run:8000/v1` from these 2 variables `SERVER` and `DOMAIN`.
 ```bash
 sky launch -c client livebench-client.yaml --env SERVER=qwen-coder --env DOMAIN=benchmark
 ```

@@ -1,7 +1,4 @@
-"""Setup commands for K3s agent
-
-Import with the main script in task setup: `install -m 755 /r2/setup/k3s_agent*`
-"""
+"""Setup commands for K3s nodes"""
 
 import os
 import subprocess
@@ -24,14 +21,14 @@ def run(command: list[str] | str, shell=False):
             print(line.strip())
         process.wait()
         if process.returncode != 0:
-            print("STDERR:", process.stderr)
+            print("STDERR:", process.stderr.read())
             raise subprocess.CalledProcessError(process.returncode, command)
 
 
 def set_k3s_dns_on_host():
     """Set up kubernetes nameserver for cluster endpoints on the host"""
     conf_dir = "/etc/systemd/resolved.conf.d/"
-    content = "[Resolve]\nDNS=10.43.0.10\nDomains=~cluster.local\n"
+    content = "[Resolve]\nDNS=10.43.0.10\nDomains=~lm.run\n"
     os.makedirs(conf_dir, exist_ok=True)
     with open(conf_dir + "k3s-dns.conf", "w", encoding="utf-8") as file:
         file.write(content)

@@ -87,6 +87,7 @@ if __name__ == "__main__":
         "--flannel-external-ip",
         "--flannel-backend=wireguard-native",
         "--write-kubeconfig-mode=644",
+        "--cluster-domain=lm.run",
         "--node-label=lmrun=" + cluster_name,
     ]
 
