@@ -14,6 +14,9 @@ envs:
   BENCH_OPTS: "--bench-name live_bench/coding --livebench-release-option 2024-11-25"
   # region where the main K3s server is hosted to retrieve cluster connection details
   AWS_DEFAULT_REGION: us-east-1
+  # tracing configuration
+  PHOENIX_PROJECT_NAME: LiveBench
+  PHOENIX_COLLECTOR_ENDPOINT: http://main.default.svc.lm.run:4317
 
 file_mounts:
   /r2:
@@ -38,6 +41,7 @@ setup: |
       crontab -
 
 # empty $cc_dir/$model.jsonl & $lcb_dir/$model.jsonl to start LiveBench w/ --resume
+# added PYTHONPATH=. so python can detect sitecustomize.py to set up tracing
 run: |
   model=`basename $MODEL`
 
@@ -45,6 +49,7 @@ run: |
   source .venv/bin/activate
   git clone --depth 1 https://github.com/LiveBench/LiveBench.git
   pip install -e LiveBench
+  pip install arize-phoenix-otel openinference-instrumentation-openai
 
   cc_dir=data/live_bench/coding/coding_completion/model_answer
   lcb_dir=data/live_bench/coding/LCB_generation/model_answer
@@ -60,7 +65,13 @@ run: |
     sleep 1
   done
 
-  python LiveBench/livebench/gen_api_answer.py --resume $BENCH_OPTS \
+  echo "
+  from phoenix.otel import register
+  from openinference.instrumentation.openai import OpenAIInstrumentor
+  OpenAIInstrumentor().instrument(tracer_provider=register())
+  " > sitecustomize.py
+
+  PYTHONPATH=. python LiveBench/livebench/gen_api_answer.py --resume $BENCH_OPTS \
     --api-base http://localhost:8000/v1 --model $model
   python LiveBench/livebench/gen_ground_truth_judgment.py $BENCH_OPTS --model $model
   python LiveBench/livebench/show_livebench_result.py $BENCH_OPTS --model $model

@@ -17,8 +17,8 @@ Jupyter notebook server with GPU
 3. redirect Jupyter default port while opening a shell on the server `ssh -L 8888:localhost:8888 jupyter` 
 4. paste the access URL in a browser
 
-### LLM Server & Data Transfers
-Two sizes of the same model show how to bring data to compute over the internet at different scales. These templates also define a pattern to run language models on personal servers: [vLLM](https://github.com/vllm-project/vllm) provides an efficient LLM server that implements OpenAI's API.
+### Data Transfers & LLM Server
+In a global and multicloud environment, data flows must maximize throughput while minimizing egress fees. These examples show how to stage and then transfer data to compute over the internet at different scales, from small to larger models. As a use case, we run language models on personal servers with [vLLM](https://github.com/vllm-project/vllm). The same logic applies to datasets.
 
 *Prerequisite*: R2 storage [configuration](#cloudflare-r2-storage)
 
@@ -57,7 +57,7 @@ curl http://localhost:8000/v1/chat/completions -H "Content-Type: application/jso
   ]
 }'
 ```
-Any SDK compatible with OpenAI API works.
+vLLM is compatible with any client SDK implementing OpenAI API.
 </details>
 
 ---
