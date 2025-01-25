@@ -65,7 +65,7 @@ vLLM is compatible with any client SDK implementing OpenAI API.
 <summary>Sustained Throughput: Hugging Face, incl. spot instance demo</summary>
 
 ---
-They are two ways to run workloads on cheap but preemptible VMs with up to 90% discount: regular tasks (shown below) or managed jobs (shown in `benchmark`).
+They are two ways to run workloads on cheap but preemptible VMs with up to 90% discount: regular tasks (shown below) or managed jobs (shown in `the-mesh`).
 
 As a regular task, a preempted spot instance doesn't recover. It's still often worth it. Save results, checkpoints or data in the bucket folder `/r2` to protect against random termination.
 
@@ -126,8 +126,8 @@ sky launch hf-to-private.yaml -i 5 --down \
 ---
 ### Advanced
 Explore more advanced examples in folders
-- `benchmark`: discover the LMRun cluster mesh
-- `fine-tune`: *coming soon*
+- `the-mesh`: discover what you can do with the LMRun cluster mesh
+- `distillation`: *coming soon*
 
 ## Cloudflare R2 storage
 If you're already familiar with S3, R2 is a more efficient substitute for LMRun global architecture, even when compute is provided by AWS.

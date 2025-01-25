@@ -1,9 +1,9 @@
 # LMRun Cluster Mesh
-These templates showcase the LMRun mesh. The network combines the power of service discovery in Kubernetes with the ease of use of a VM for AI workloads. Any VM in any region and on any cloud can join the mesh.
+This walkthrough showcases the LMRun mesh. Its network combines the power of service discovery in Kubernetes with the ease of use of a VM for AI workloads. Any VM in any region and on any cloud can join the mesh.
 
 ---
 
-We first [connect](#service--client-vms) example workloads below by running a benchmark task from LiveBench against a model server. We then introduce [managed jobs](#managed-spot-jobs) to help with further automation. We add LLM [observability](#stateful-and-ui-servers) to the mesh to show how any other MLOps interface would work. Finally, we demonstrate these features in a [multi-cloud](#multicloud-mesh) context. 
+We first [connect](#service--client-vms) example workloads below by running a benchmark task from LiveBench against a model server. We then introduce [managed jobs](#managed-spot-jobs) to help with further automation. We add LLM [observability](#stateful-and-ui-servers) to the mesh to show how any other MLOps interface would work. Finally, we demonstrate these features in a [multi-cloud](#multicloud-integration) context. 
 
 *Prerequisite*: the main K3s cluster node must be up and running. Check with `sky status`. Otherwise, go to `service` and run `sky launch -c main main.yaml` to launch the main node. Its setup creates credentials allowing new nodes (K3s agents) to join the cluster.
 
@@ -55,10 +55,10 @@ sky jobs launch monolithic-job.yaml -c sky-t1 \
 
 ## Stateful and UI Servers
 - Access a UI: redirect the port, in this case Phoenix, to your local machine `ssh -L 6006:localhost:6006 main` and visit `localhost:6006` in your browser.
-- The above job has populated a LiveBench project in Phoenix. Besides telemetry dependencies (`arize` and `openinference`) installed in `monolithic-job.yaml` and the initialization injected from `sitecustomize.py`, the only required configuration is `PHOENIX_COLLECTOR_ENDPOINT`, which specifies the gRPC endpoint running on the main node: `http://main.default.svc.lm.run:4317`.
+- When it runs, `monolithic-job.yaml` populates a LiveBench project in Phoenix. Besides telemetry dependencies (`arize`, `openinference`) and the initialization injected from `sitecustomize.py`, the only required configuration is `PHOENIX_COLLECTOR_ENDPOINT`, which specifies the gRPC endpoint running on the main node: `http://main.default.svc.lm.run:4317`.
 - Stop the main node with `sky stop` if you'd like to preserve data at rest without having to back up. You could also run `rsync` from `~/.phoenix` to `/r2/` before shutting down and vice versa next time you need to load this data.
 
 > Any MLOps platform can be deployed on a VM and exposed to the mesh with a `--port` flag when setting up the K3s node. Clients connect to servers across the global and private LMRun mesh through a `*.svc.lm.run` URL.
 
-## Multicloud Mesh
+## Multicloud Integration
 *coming soon*
