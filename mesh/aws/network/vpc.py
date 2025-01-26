@@ -13,9 +13,9 @@ from aws.network.peering import peer, main_private_interfaces
 def cluster(main_region: str, regions: list[str]):
     """cluster of global and private networks routed to a central region"""
     selected_allocations = [a for a in allocations if a["region"] in regions]
-    assert len(selected_allocations) == len(
-        regions
-    ), f"one of {regions} is missing a CIDR block allocation in cidr_blocks.py"
+    assert len(selected_allocations) == len(regions), (
+        f"one of {regions} is missing a CIDR block allocation in cidr_blocks.py"
+    )
 
     sky_ref = os.environ["LMRUN_SKY_REF"]
     ref_tag = aws_.TagArgs(key="Name", value=sky_ref)

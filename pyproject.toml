@@ -1,54 +1,44 @@
-[tool.poetry]
+[project]
 name = "lmrun"
-package-mode = false
-
-[tool.poetry.dependencies]
-python = "~3.11"  # SkyPilot requirement
-pulumi = "^3.142.0"
-pulumi-aws-native = "^1.13.0"
-pulumi-aws = "^6.65.0"
+version = "0.0.0"
+# using `uv python pin 3.11` to manage .python-version for upper version bound
+# https://github.com/astral-sh/uv/issues/4970#issuecomment-2537420125
+# https://github.com/astral-sh/uv/issues/7429#issuecomment-2354018114
+requires-python = ">=3.11"
+dependencies = [
+  "pulumi>=3.142.0,<4.0.0",
+  "pulumi-aws-native>=1.13.0,<2.0.0",
+  "pulumi-aws>=6.65.0,<7.0.0",
 # - install SkyPilot without AWS support: it includes AWS CLI V1, shadowing V2
 #    - AWS CLI V2 is required for AWS Single Sign-On (SSO)
 #    - we set boto3 dependency explicitly and ensure V2 is available:
 #        it can't be installed via pip, contrary to V1
-# - use nightly for updated v6 catalog, not available in v0.7.0 or local for bug fix
-skypilot-nightly = {extras = ["paperspace"], version = "^1.0.0.dev20250105"}
-# skypilot = { path = "../skypilot", extras = ["paperspace"], develop = true }
-boto3 = "^1.35.96"
-
-[tool.poetry.group.dev.dependencies]
-black = "^24.10.0"
-# Downgrade pylint: 3.3.3 depends on colorama (>=0.4.5)
-# -> skypilot[aws] (0.7.0) depends on colorama (<0.4.5)
-pylint = "^2"
-pulumi-github = "^6.4.0"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
-[tool.pylint.messages-control]
-# errors are deactivated when unreliable to keep code free of annotations
-# -> when SkyPilot bumps colorama dependency, pylint 3 should resolve most
-disable = [
-    # pylint 2 struggles with modules in current directory
-    "import-error", "no-name-in-module",
-    # pylint 2 detects controversial constants that must be capitalized
-    "invalid-name",
-    # pylint 2 mistakenly believes that Module 'os' has no 'environ' member
-    "no-member",
-    # flags parts of IAM policies, which should remain complete literals
-    "duplicate-code"
+# - use nightly for updated v6 catalog, not available in v0.7.0
+  "skypilot-nightly[paperspace]==1.0.0.dev20250105",
+  "boto3>=1.35.96,<2.0.0",
 ]
+
+[project.optional-dependencies]
+dev = [
+  "ruff>=0.9.3,<1.0.0",
+  # Downgrade: pylint 3 depends on colorama>=0.4.5 but skypilot 0.7.0 needs <0.4.5
+  "pylint>=2.17.7,<3.0.0",
+  "pulumi-github>=6.4.0,<7.0.0"
+]
+
+# add pylint for single rule, not known to be available in ruff
+[tool.pylint.messages-control]
+disable = "all"
+enable = "too-many-lines"
 # Why up to 120 lines in a file?
 # 1) incentivize less code
 # 2) limit scrolling
 # 3) force modularization and hierarchy of abstraction levels:
 #     - clean, semantic source files (what goes where)
 #     - data manipulation lives deeper than business logic
-#     - easier to unit test in lightweight docstrings
+#     - better focus to unit test in lightweight docstrings
 # 4) make code AI friendly:
 #     - targeted context management with source file paths
 #     - efficient token usage
-#     - safer AI refactoring on entire files
+#     - safer AI refactoring
 max-module-lines = 120

@@ -12,7 +12,7 @@ from k3s_command import run, service_config, set_k3s_dns_on_host
 
 run(["apt-get", "update"])
 run(["apt-get", "install", "-y", "python3-boto3"])
-import boto3  # pylint: disable=wrong-import-position
+import boto3  # noqa: E402
 
 
 def generate_k3s_token(length=48):

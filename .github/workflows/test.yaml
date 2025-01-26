@@ -26,10 +26,8 @@ jobs:
           python-version: "3.11"
       - name: lmrun/setup doctests
         run: python setup/test_* -v
-      - name: Install venv
-        run: |
-          pip install poetry
-          poetry install
+      - name: Install uv
+        run: pip install uv
       - name: Mesh doctests
         # 1. go to the Pulumi project to load local modules
         # 2. export variables instead of loading .env: conflicting AWS_PROFILE auth
@@ -37,4 +35,4 @@ jobs:
         run: |
           cd mesh
           export LMRUN_SKY_REF=lmrun
-          poetry run python -m doctest $(find . -name "*.py" ! -path "*__*__*")
+          uv run python -m doctest $(find . -name "*.py" ! -path "*__*__*")

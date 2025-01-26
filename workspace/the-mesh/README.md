@@ -39,19 +39,19 @@ Take VMs down once the task completed and displayed results: `sky down qwen-code
 
 Cost-effective spot instances used to run models above can be terminated. SkyPilot jobs automatically handle recovery thanks to a managed controller VM. In earlier examples, we decoupled client and server on different VMs. This useful pattern can query several LLMs from a single workload or expose the model to several clients. In this example, we demonstrate the same task on a single VM to showcase..
 
-1. stateful recovery when all processes are interrupted
-- notice we added the `--resume` flag to `gen_api_answer.py` in the job definition: the process must be configured to automatically restart where it stopped
-- launch with `./launch-32B.sh qwen-coder monolithic-job.yaml`: the script runs `sky jobs launch` instead of `sky launch` to turn a task into a managed job
+1. Stateful recovery when all processes are interrupted
+- Notice we added the `--resume` flag to `gen_api_answer.py` in the job definition: the process must be configured to automatically restart where it stopped
+- Launch with `./launch-32B.sh qwen-coder monolithic-job.yaml`: the script runs `sky jobs launch` instead of `sky launch` to turn a task into a managed job
 ```bash
 # CLI command to launch a benchmarking job on any model fitting defined accelerators
 sky jobs launch monolithic-job.yaml -c sky-t1 \
     --env MODEL=NovaSky-AI/Sky-T1-32B-Preview \
     --env VERSION=1e3f4c62a30c7ce70f4b3a3b952895d866943551
 ```
-- at least a minute after a few benchmark questions completed, go to the AWS console and terminate the node to test recovery
-- data is backed up every minute and then synced at bootstrap (see `rsync` commands in `monolithic-job.yaml`): the LiveBench `data` folder will be recovered when the evaluation starts again where it stopped on the previous VM
+- At least a minute after a few benchmark questions completed, go to the AWS console and terminate the node to test recovery
+- Data is backed up every minute and then synced at bootstrap (see `rsync` commands in `monolithic-job.yaml`): the LiveBench `data` folder will be recovered when the evaluation starts again where it stopped on the previous VM
 
-2. how to integrate an LLM observability platform through the mesh: see Stateful and UI Servers below
+2. How to integrate an LLM observability platform through the mesh: see Stateful and UI Servers below
 
 ## Stateful and UI Servers
 - Access a UI: redirect the port, in this case Phoenix, to your local machine `ssh -L 6006:localhost:6006 main` and visit `localhost:6006` in your browser.

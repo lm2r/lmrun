@@ -9,10 +9,10 @@ Any public branch is granted these permissions (can be modified in the trust pol
 ## Launch
 1. `export GITHUB_TOKEN=...` with a token from the GitHub account (username or organization) where to set up CI
 2. `export GITHUB_OWNER=...` with the GitHub account name (would be `lm2r` for the original repo)
-2. log in to Pulumi admin backend
+2. Log in to Pulumi admin backend
 ```bash
 export AWS_ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
 pulumi login s3://pulumi-admin-$AWS_ACCOUNT
 ```
-3. initialize `pulumi stack init lmrun --secrets-provider awskms://alias/pulumi/admin` or refresh the stack config `pulumi config refresh` if it isn't available locally
+3. Initialize `pulumi stack init lmrun --secrets-provider awskms://alias/pulumi/admin` or refresh the stack config `pulumi config refresh` if it isn't available locally
 4. `pulumi up`

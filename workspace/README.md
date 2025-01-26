@@ -3,19 +3,19 @@ These templates extend a local development environment with remote GPUs (or othe
 
 ## Launch
 *Prerequisite*: first 3 steps of the [Quickstart](/README.md#quickstart)
-1. activate the Python environment with `poetry shell`
+1. If deactivated, source the Python environment with `. ../.venv/bin/activate`
 2. `sky check` to verify cloud access - [doc](https://docs.skypilot.co/en/latest/getting-started/installation.html#verifying-cloud-access)
-3. familiarize yourself with SkyPilot [Quickstart](https://docs.skypilot.co/en/latest/getting-started/quickstart.html#stop-terminate-a-cluster): see at least how to [stop](https://docs.skypilot.co/en/latest/getting-started/quickstart.html#stop-terminate-a-cluster) incurring costs for resources or plan to make use of [autostop](https://docs.skypilot.co/en/latest/reference/auto-stop.html)
+3. Familiarize yourself with SkyPilot [Quickstart](https://docs.skypilot.co/en/latest/getting-started/quickstart.html#stop-terminate-a-cluster): see at least how to [stop](https://docs.skypilot.co/en/latest/getting-started/quickstart.html#stop-terminate-a-cluster) incurring costs for resources or plan to make use of [autostop](https://docs.skypilot.co/en/latest/reference/auto-stop.html)
 4. Launching a L4 GPU while uploading a workdir is as simple as `sky launch -t g6.xlarge --workdir .`. Refer to Task [YAML](https://docs.skypilot.co/en/latest/reference/yaml-spec.html) and CLI [doc](https://docs.skypilot.co/en/latest/reference/cli.html#sky-launch) for all options.
-5. then, `sky exec` can sync updated code and run it on the VM
+5. Then, `sky exec` can sync updated code and run it on the VM
 
 ## Templates
 ### Jupyter
 Jupyter notebook server with GPU
 1. `sky launch -c jupyter jupyter.yaml`
-2. wait for the access URL `http://localhost:8888/tree?token=...` to appear in logs, copy it and type Ctrl-C to exit, the server will keep running in the background
-3. redirect Jupyter default port while opening a shell on the server `ssh -L 8888:localhost:8888 jupyter` 
-4. paste the access URL in a browser
+2. Wait for the access URL `http://localhost:8888/tree?token=...` to appear in logs, copy it and type Ctrl-C to exit, the server will keep running in the background
+3. Redirect Jupyter default port while opening a shell on the server `ssh -L 8888:localhost:8888 jupyter` 
+4. Paste the access URL in a browser
 
 ### Data Transfers & LLM Server
 In a global and multicloud environment, data flows must maximize throughput while minimizing egress fees. These examples show how to stage and then transfer data to compute over the internet at different scales, from small to larger models. As a use case, we run language models on personal servers with [vLLM](https://github.com/vllm-project/vllm). The same logic applies to datasets.
@@ -114,13 +114,13 @@ To expose large and private model weights or datasets, consider Hugging Face rep
 - Set a public SSH key on [HF](https://huggingface.co/settings/keys).
 - Create a new private repo by visiting [huggingface.co/new](huggingface.co/new). Name it `Qwen2.5-Coder-32B-Instruct` for this example.
 
-1. upload a public model to a private Hugging Face repository for testing 
+1. Upload a public model to a private Hugging Face repository for testing 
 ```bash
 sky launch hf-to-private.yaml -i 5 --down \
     --env ORG=Qwen --env NAME=Qwen2.5-Coder-32B-Instruct \
     --env NEW_ORG="<YOUR_HF_USERNAME>" --env SSH_KEY="</path/to/hf/private/key>"
 ```
-2. export your HF token in your shell, reuse a similar `sky launch vllm.yaml` command as for a public model, and add `--env HF_TOKEN` to it: `MODEL` follows the format `"<YOUR_HF_USERNAME>/Qwen2.5-Coder-32B-Instruct"` and the commit `VERSION` can be copied from HF repo "Files and versions" tab
+2. Export your HF token in your shell, reuse a similar `sky launch vllm.yaml` command as for a public model, and add `--env HF_TOKEN` to it: `MODEL` follows the format `"<YOUR_HF_USERNAME>/Qwen2.5-Coder-32B-Instruct"` and the commit `VERSION` can be copied from HF repo "Files and versions" tab
 </details>
 
 ---

@@ -15,8 +15,8 @@ VPCs are only deployed in regions where selected accelerators are available. The
 
 ## Deployment
 *Prerequisite*: first 2 steps of the [Quickstart](/README.md#quickstart)
-1. `poetry shell` to activate the environment
-2. log in to Pulumi admin backend: first, export your account ID or retrieve it like below
+1. `. ../.venv/bin/activate` to activate the environment from this folder
+2. Log in to Pulumi admin backend: first, export your account ID or retrieve it like below
 ```bash
 export AWS_ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
 pulumi login s3://pulumi-admin-$AWS_ACCOUNT
