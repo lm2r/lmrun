@@ -40,7 +40,7 @@ export VERSION=c03e6d358207e414f1eca0bb1891e29f1db0e242
 ```bash
 sky launch hf-to-r2.yaml --env MODEL -i 5 --down
 ```
-`-i 5 --down` shuts down the upload server after 5 minutes of inactivity. Typically, the model would be custom or private. Otherwise, you can also load it directly from Hugging Face with `vllm.yaml`, like the spot instance example below. Note that observed loading times are much faster from R2 (~2m).
+`-i 5 --down` shuts down the upload server after 5 minutes of inactivity. Typically, data and model weights stored in object storage are private. Load public models directly from Hugging Face with `vllm.yaml`, like the spot instance example below.
 - **Serve** the LLM you just staged, the version is in the R2 bucket path. `vllm-7B.yaml` is only suitable for small models, as they're loaded through a mounted R2 bucket with limited throughput above this transfer size (Cloudflare runs smaller models on the edge):
 ```bash
 sky launch vllm-7B.yaml --env MODEL --env VERSION -c vllm
