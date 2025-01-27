@@ -5,6 +5,7 @@ Any VM initialized with `k3s_server.py` is a main K3s node. Any VM initialized w
 
 - `sky launch -c main main.yaml` to launch a minimal main K3s node
 - `sky launch -c main main-phoenix.yaml` to include a [Phoenix](https://phoenix.arize.com) server cohosted with the main K3s node
+- `sky launch -c main main-webui.yaml` to include a cohosted [Open WebUI](https://docs.openwebui.com) server
 
 ## Fixed private IPs
 *power users only*

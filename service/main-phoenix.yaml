@@ -17,10 +17,10 @@ setup: |
   install -m 755 /r2/setup/k3s_* .
   sudo -E ./k3s_server.py --ports 6006,4317
 
-  python -m venv .phoenix_env
-  source .phoenix_env/bin/activate
+  conda create -n phoenix python=3.13 -y
+  conda activate phoenix
   pip install arize-phoenix
 
 run: |
-  source .phoenix_env/bin/activate
+  conda activate phoenix
   phoenix serve
