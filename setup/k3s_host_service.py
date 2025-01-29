@@ -16,16 +16,17 @@ metadata:
   labels:
     lmrun: <LABEL>
 spec:
-  clusterIP: None  # headless service
+  type: NodePort
   selector:
     app: <LABEL>
   ports:
 """
 # spec.ports[*].name is required for more than one port
 service_port_template = """
-    - port: <PORT>
-      targetPort: <PORT>
-      name: '<PORT>'
+    - port: <APP_PORT>
+      targetPort: <APP_PORT>
+      name: '<APP_PORT>'
+      nodePort: <NODE_PORT>
 """
 
 statefulset_template = """
@@ -49,7 +50,7 @@ spec:
     spec:
       nodeSelector:
         lmrun: <LABEL>
-      hostNetwork: true  # returns the node IP instead of pod IP
+      hostNetwork: true
       terminationGracePeriodSeconds: 0
       containers:
       - name: proxy
@@ -57,14 +58,20 @@ spec:
         ports:
 """
 statefulset_port_template = """
-        - containerPort: <PORT>
-          hostPort: <PORT>  # maps to a port on the node
+        - containerPort: <APP_PORT>
+          hostPort: <APP_PORT>  # maps to service running on the VM
           protocol: TCP
 """
 
 
-def build_manifest(host_label: str, ports: str, namespace: str):
+def build_manifest(
+    host_label: str, app_ports: list[str], node_ports: list[str], namespace: str
+) -> str:
     """Render and combine Kubernetes object templates to return the final manifest"""
+    assert len(app_ports) == len(node_ports), (
+        f"Missing port to match app ({app_ports}) and node ({node_ports}) ports"
+    )
+
     namespace_manifest = namespace_template.replace("<NAMESPACE>", namespace)
     svc_manifest = service_template.replace("<NAMESPACE>", namespace).replace(
         "<LABEL>", host_label
@@ -73,10 +80,12 @@ def build_manifest(host_label: str, ports: str, namespace: str):
         "<LABEL>", host_label
     )
 
-    for port in ports.split(","):
-        svc_manifest += service_port_template.replace("<PORT>", port)
-        sts_manifest += statefulset_port_template.replace("<PORT>", port)
+    for app_port, node_port in zip(app_ports, node_ports):
+        svc_manifest += service_port_template.replace("<APP_PORT>", app_port).replace(
+            "<NODE_PORT>", node_port
+        )
+        sts_manifest += statefulset_port_template.replace("<APP_PORT>", app_port)
 
     manifest = "---\n".join([namespace_manifest, svc_manifest, sts_manifest])
-    # remove blank lines to clean output
+    # remove all blank lines for clean logging and doctest
     return manifest.replace("\n\n", "\n").strip()

@@ -16,7 +16,8 @@ envs:
   AWS_DEFAULT_REGION: us-east-1
   # tracing configuration
   PHOENIX_PROJECT_NAME: LiveBench
-  PHOENIX_COLLECTOR_ENDPOINT: http://main.default.svc.lm.run:4317
+  # specified in main-phoenix.yaml: --app-ports 6006,4317 --node-ports 30200,30201
+  PHOENIX_GRPC_PORT: 30201
 
 file_mounts:
   /r2:

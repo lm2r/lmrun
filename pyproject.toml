@@ -31,7 +31,7 @@ dev = [
 disable = "all"
 enable = "too-many-lines"
 # Why up to 120 lines in a file?
-# 1) incentivize less code
+# 1) incentivize less code, no boilerplate
 # 2) limit scrolling
 # 3) force modularization and hierarchy of abstraction levels:
 #     - clean, semantic source files (what goes where)

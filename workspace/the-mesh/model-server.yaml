@@ -19,12 +19,11 @@ file_mounts:
   /r2:
     source: r2://lmrun
 
-# --port 8000 creates a Kubernetes service to proxy inference requests to vLLM
-# --namespace is the service subdomain: <cluster name>.<namespace>.svc.lm.run
+# proxy inference requests through a K8s service mapping vLLM port 8000 to a node port
 setup: |
   set -e
   install -m 755 /r2/setup/{k3s_*,vllm-conda-install.sh} .
-  sudo -E ./k3s_agent.py --port 8000 --namespace benchmark
+  sudo -E ./k3s_agent.py --app-port 8000 --node-port 30300
   ./vllm-conda-install.sh
 
 # add '-r' to jq to exclude quotes from model name and fix "model name not found"
@@ -33,5 +32,5 @@ run: |
   conda activate vllm
   model_name=`echo $SKYPILOT_CLUSTER_INFO | jq -r .cluster_name`
   vllm serve $SERVE_OPTS --generation-config auto \
-      --max-model-len 31120 --gpu-memory-utilization 0.94 \ 
+      --max-model-len 31120 --gpu-memory-utilization 0.94 \
       --served-model-name $model_name --revision $VERSION $MODEL

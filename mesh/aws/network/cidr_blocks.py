@@ -30,9 +30,8 @@ class Allocation(TypedDict):
 
 main_region = os.environ["AWS_DEFAULT_REGION"]
 
-# results in a memorable main IP ending in 4.0.4 after 4.0.0-3 reserved by AWS
+# results in a memorable LMRun IP ending in 4.0.4 after 4.0.[0-3] reserved by AWS
 main_allocation: Allocation = {"region": main_region, "cidr_block": "10.4.0.0/16"}
-# removed 10.4.0.0 reserved for main allocation
 default_allocations: list[Allocation] = [
     {"region": "af-south-1", "cidr_block": "10.1.0.0/16"},
     {"region": "ap-east-1", "cidr_block": "10.2.0.0/16"},
@@ -64,8 +63,9 @@ default_allocations: list[Allocation] = [
     {"region": "us-east-2", "cidr_block": "10.29.0.0/16"},
     {"region": "us-west-1", "cidr_block": "10.30.0.0/16"},
     {"region": "us-west-2", "cidr_block": "10.31.0.0/16"},
-    # exclude k3s --cluster-cidr default "10.42.0.0/16"	reserved for pod IPs
+    # do not use pod "10.42.0.0/16" & service "10.43.0.0/16" CIDR to avoid confusion
 ]
+# replace default by main allocation for main region
 allocations = [
     alloc if alloc["region"] != main_region else main_allocation
     for alloc in default_allocations

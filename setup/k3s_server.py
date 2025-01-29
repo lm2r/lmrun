@@ -8,7 +8,7 @@ import secrets
 import string
 from socket import gethostbyname, gethostname
 import requests
-from k3s_command import run, service_config, set_k3s_dns_on_host
+from k3s_command import run, service_config
 
 run(["apt-get", "update"])
 run(["apt-get", "install", "-y", "python3-boto3"])
@@ -29,7 +29,7 @@ def store_parameter(
 ):
     """Store parameter to expose to K3s agents"""
     name = f"/lmrun/{suffix}"
-    print(f"Put {name} in parameter store..")
+    print(f"Put {name} in parameter store")
     boto3.client("ssm", region_name=region_name).put_parameter(
         Name=name,
         Value=value,
@@ -93,10 +93,8 @@ if __name__ == "__main__":
 
     k3s_command += connection_options()
     run(" ".join(k3s_command), shell=True)
+    service_config(cluster_name)  # host label is the cluster name on main node
 
     with open("/etc/rancher/k3s/k3s.yaml", "r", encoding="utf-8") as file:
         kubeconfig = file.read()
     store_parameter(cluster_name + "/kubeconfig", kubeconfig, "SecureString", region)
-
-    service_config(cluster_name)  # host label is the cluster name on main node
-    set_k3s_dns_on_host()

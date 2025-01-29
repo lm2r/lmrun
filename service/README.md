@@ -1,14 +1,18 @@
 # Sky Services
-> multi-cloud MLOps services: example walkthrough available in `workspace/benchmark`
+> multi-cloud MLOps services
 
-Any VM initialized with `k3s_server.py` is a main K3s node. Any VM initialized with `k3s_agent.py` is a K3s agent. There is only a single active main node at a time and agents always connect to the most recent. The main node should always be provisioned first and decommissioned last to preserve the LMRun cluster integrity. Finally, agents expect a main node launched with `sky launch -c main`, as defined by `K3S_SERVER_NAME` in `k3s_agent.py`. 
+Check out [/workspace/the-mesh](/workspace/the-mesh) for working examples relying on these services.
+
+Any VM initialized with `k3s_server.py` is a main K3s node. Any VM initialized with `k3s_agent.py` is a K3s agent. There is only a single active main node at a time and new agents connect to the most recent. The main node should always be provisioned first and decommissioned last to preserve the LMRun cluster integrity. Finally, agents expect a main node launched with `sky launch -c main`, as defined by `K3S_SERVER_NAME` in `k3s_agent.py`. 
 
 - `sky launch -c main main.yaml` to launch a minimal main K3s node
 - `sky launch -c main main-phoenix.yaml` to include a [Phoenix](https://phoenix.arize.com) server cohosted with the main K3s node
 - `sky launch -c main main-webui.yaml` to include a cohosted [Open WebUI](https://docs.openwebui.com) server
 
+`k3s_*` bootstrap scripts can be found in `/setup` and live versions are in the R2 bucket. Sync with `/setup/r2-sync.sh`.
+
 ## Fixed private IPs
-*power users only*
+*for power users*
 
 The Kubernetes DNS system integrated with VMs covers all use cases but requires a K3s server. It's still possible to assign a known private IP to an AWS instance without a running K3s server. The mesh stack creates a private network interface in each zone of the main region (6 in us-east-1). Note that the associated IPs don't work across clouds.
 

@@ -13,7 +13,7 @@ envs:
   AWS_DEFAULT_REGION: us-east-1  # boto3 relies on this variables in k3s_agent.py
   BENCH_OPTS: "--bench-name live_bench/coding --livebench-release-option 2024-11-25"
   SERVER:
-  DOMAIN: default
+  MODEL: 
 
 file_mounts:
   /r2:
@@ -23,7 +23,7 @@ file_mounts:
 # 2. install LiveBench
 setup: |
   set -e
-  install -m 755 /r2/setup/k3s_agent* .
+  install -m 755 /r2/setup/k3s_* .
   sudo -E ./k3s_agent.py
 
   python -m venv .venv
@@ -37,8 +37,8 @@ setup: |
 run: |
   source .venv/bin/activate
   python LiveBench/livebench/gen_api_answer.py $BENCH_OPTS \
-      --api-base http://$SERVER.$DOMAIN.svc.lm.run:8000/v1 --model $SERVER
+      --api-base http://localhost:$SERVER/v1 --model $MODEL
 
-  python LiveBench/livebench/gen_ground_truth_judgment.py $BENCH_OPTS --model $SERVER
+  python LiveBench/livebench/gen_ground_truth_judgment.py $BENCH_OPTS --model $MODEL
 
-  python LiveBench/livebench/show_livebench_result.py $BENCH_OPTS --model $SERVER
+  python LiveBench/livebench/show_livebench_result.py $BENCH_OPTS --model $MODEL

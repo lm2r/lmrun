@@ -5,7 +5,7 @@ import os
 import json
 from socket import gethostbyname, gethostname
 import requests
-from k3s_command import run, set_k3s_dns_on_host, service_config, dupe_node_cleanup
+from k3s_command import run, service_config, dupe_node_cleanup
 
 
 run(["apt-get", "update"])
@@ -18,7 +18,7 @@ K3S_SERVER_NAME = "main"
 def get_parameter(suffix: str):
     """Get server parameters to connect K3s agents"""
     name = f"/lmrun/{suffix}"
-    print(f"Get {name} from parameter store..")
+    print(f"Get {name} from parameter store")
     # no region_name, relying on AWS_DEFAULT_REGION where the server is located
     return boto3.client("ssm").get_parameter(
         Name=name,
@@ -94,8 +94,5 @@ if __name__ == "__main__":
         file.write(kubeconfig.replace("127.0.0.1", k3s_server_ip))
 
     # delete previous records of the same node, if any, to clean and free service pods
-    print(f"Checking for previous nodes with label lmrun={label}..")
     dupe_node_cleanup(label)
     service_config(label)
-
-    set_k3s_dns_on_host()
