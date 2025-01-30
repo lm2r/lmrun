@@ -127,7 +127,7 @@ sky launch hf-to-private.yaml -i 5 --down \
 ### Advanced
 Explore more advanced examples in folders
 - `the-mesh`: discover what you can do with the LMRun cluster mesh
-- `distillation`: *coming soon*
+- `finetune`: *coming soon*
 
 ## Cloudflare R2 storage
 If you're already familiar with S3, R2 is a more efficient substitute for LMRun global architecture, even when compute is provided by AWS.

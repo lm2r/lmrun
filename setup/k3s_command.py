@@ -61,7 +61,7 @@ def host_service(host_label: str, app_ports: str, node_ports: str, namespace: st
                 if scanned_port in node_ports:
                     ns_svc = f"{namespace}/{service}"
                     print(
-                        f"Checking endpoint of conflicting service",
+                        "Checking endpoint of conflicting service",
                         f"{ns_svc} blocking node port {scanned_port}..",
                     )
                     # - throw ValueError if endpoint has an IP
