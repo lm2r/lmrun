@@ -1,5 +1,5 @@
 # LMRun Cluster Mesh
-This walkthrough showcases the LMRun mesh. Its network combines the power of service discovery in Kubernetes with the ease of use of a VM for AI workloads. Authorized instances in any region or cloud can join the mesh and your environment through VPN tunnels or peered VPCs configured by LMRun.
+This walkthrough showcases the LMRun mesh. Its network combines the power of service discovery in Kubernetes with the ease of use of a VM for AI workloads. Instances in any region or cloud automatically join the LMRun environment through VPN tunnels or peered VPCs.
 
 ---
 
@@ -35,7 +35,7 @@ sky launch -c client livebench-client.yaml --env SERVER=30300 --env MODEL=qwen-c
 Take instances down once the task completed and displayed results: `sky down qwen-coder client`.
 
 ## Managed Spot Jobs
-*Prerequisite:* to spare an extra example VM, the next 2 sections require a new main node which includes a Phoenix server to trace LLM calls. Make sure that no node already exists with `sky status` and `sky down`. Then, start the main cluster node with `sky launch -c main main-phoenix.yaml` from `service` folder.
+*Prerequisite*: to spare an extra example VM, the next 2 sections require a new main node which includes a Phoenix server to trace LLM calls. Make sure that no node already exists with `sky status` and `sky down`. Then, start the main cluster node with `sky launch -c main main-phoenix.yaml` from `service` folder.
 
 Cost-effective spot instances running above models can be terminated. SkyPilot jobs automatically handle recovery thanks to a managed controller VM. In earlier examples, we decoupled client and server on different VMs. This useful pattern can query several LLMs from a single workload or expose the model to several clients. In this example, we demonstrate the same task on a single VM to showcase..
 
@@ -61,4 +61,13 @@ sky jobs launch monolithic-job.yaml -c sky-t1 \
 > Any MLOps platform running on a VM can connect to the mesh thanks to `k3s_agent.py` flags: `--app-port(s)` maps to exposed `--node-port(s)`. As a result, clients connect to servers across the global and private LMRun mesh through a `localhost:<NODE PORT>` URL.
 
 ## Multicloud Integration
-*coming soon*
+This example is a simple and common use case: we launch a model on an external GPU provider to interact with it from an existing environment on a hyperscaler.
+
+We'll deploy a model on Lambda and chat with it from Open WebUI, a user-friendly interface, hosted on an AWS instance. The LMRun mesh integrates both nodes seamlessly over a secure cluster network. Tokens and credentials are automatically managed for us.
+
+*Prerequisites*: 
+1. Follow SkyPilot [doc](https://docs.skypilot.co/en/latest/getting-started/installation.html#lambda-cloud) to set up your Lambda Cloud key.
+2. Go to Lambda firewall [settings](https://cloud.lambdalabs.com/firewall) and create a new inbound rule for the VPN connection: select "Custom UDP" type and enter port `51820`. Leaving default source `0.0.0.0/0` is safe (check out WireGuard VPN if you'd like to know more). 
+3. Start a new LMRun cluster from scratch. First, make sure that no node already exists with `sky status` and `sky down`. Then, start the main cluster node with `sky launch -c main main-webui.yaml` from `service` folder.
+
+- Launch the model on Lambda Cloud: `sky launch -c qwen-coder external-server.yaml`

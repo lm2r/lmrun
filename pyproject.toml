@@ -14,7 +14,7 @@ dependencies = [
 #    - we set boto3 dependency explicitly and ensure V2 is available:
 #        it can't be installed via pip, contrary to V1
 # - use nightly for updated v6 catalog, not available in v0.7.0
-  "skypilot-nightly[paperspace]==1.0.0.dev20250105",
+  "skypilot-nightly[paperspace]==1.0.0.dev20250130",
   "boto3>=1.35.96,<2.0.0",
 ]
 

@@ -66,7 +66,8 @@ def connection_options():
 
     public_ip = instance_metadata(slug="public-ipv4")
     store_parameter(cluster_name + "/ip/public", public_ip, "String", region)
-    opts += ["--node-external-ip=" + public_ip]
+    # tls-san adds the public ip to kubeconfig certificate to run kubectl outside AWS
+    opts += ["--node-external-ip=" + public_ip, "--tls-san=" + public_ip]
 
     return opts
 

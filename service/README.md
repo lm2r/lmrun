@@ -3,7 +3,7 @@
 
 Check out [/workspace/the-mesh](/workspace/the-mesh) for working examples relying on these services.
 
-Any VM initialized with `k3s_server.py` is a main K3s node. Any VM initialized with `k3s_agent.py` is a K3s agent. There is only a single active main node at a time and new agents connect to the most recent. The main node should always be provisioned first and decommissioned last to preserve the LMRun cluster integrity. Finally, agents expect a main node launched with `sky launch -c main`, as defined by `K3S_SERVER_NAME` in `k3s_agent.py`. 
+Any VM initialized with `k3s_server.py` is a main K3s node. Any VM initialized with `k3s_agent.py` is a K3s agent. There is only a single active main node at a time and new agents connect to the most recent. The main node should always be provisioned first and decommissioned last to preserve the LMRun cluster integrity. Finally, security groups and agents expect a main node launched with `sky launch -c main`. This name is matched in `~/.sky/config.yaml` and defined by `K3S_SERVER_NAME` in `k3s_agent.py`. 
 
 - `sky launch -c main main.yaml` to launch a minimal main K3s node
 - `sky launch -c main main-phoenix.yaml` to include a [Phoenix](https://phoenix.arize.com) server cohosted with the main K3s node

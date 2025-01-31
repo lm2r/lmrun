@@ -1,8 +1,8 @@
-"""specific policy document for the main cluster node"""
+"""more permissive IAM policy document for the main cluster node"""
 
 
 def document(account_id: str, main_region: str):
-    """main IAM policy document"""
+    """allow the main cluster node to edit cluster credentials"""
     return {
         "Version": "2012-10-17",
         "Statement": [

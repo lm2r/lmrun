@@ -418,7 +418,7 @@ requires-dist = [
     { name = "pulumi-github", marker = "extra == 'dev'", specifier = ">=6.4.0,<7.0.0" },
     { name = "pylint", marker = "extra == 'dev'", specifier = ">=2.17.7,<3.0.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.9.3,<1.0.0" },
-    { name = "skypilot-nightly", extras = ["paperspace"], specifier = "==1.0.0.dev20250105" },
+    { name = "skypilot-nightly", extras = ["paperspace"], specifier = "==1.0.0.dev20250130" },
 ]
 
 [[package]]
@@ -1040,7 +1040,7 @@ wheels = [
 
 [[package]]
 name = "skypilot-nightly"
-version = "1.0.0.dev20250105"
+version = "1.0.0.dev20250130"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cachetools" },
@@ -1065,9 +1065,9 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "wheel" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/40/2b/fc614dc05e98fb14d6bddc002debcaaf1d50cbd76376e80bd5f077a24d00/skypilot_nightly-1.0.0.dev20250105.tar.gz", hash = "sha256:79f6bcd32b5ea3aca8214e76ac30a9e201e791054780f166fd3fdda45453d797", size = 938657 }
+sdist = { url = "https://files.pythonhosted.org/packages/f5/9b/71212348d23d7a72544d735649852da4343536e411e3fc104fde045a61eb/skypilot_nightly-1.0.0.dev20250130.tar.gz", hash = "sha256:9ca82f3213b5ddaa62e1a358ff89d31dc2bf84ee20219a93c3c6c452a10fbed9", size = 959807 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/7a/ce/b4f9c38ba74820318f7f1c154b1a8eaa87e55e3a79130300f40216444e19/skypilot_nightly-1.0.0.dev20250105-py3-none-any.whl", hash = "sha256:5ec3ae9f92fa3cb19138748ac97ca9bbe365fab3f9b8fa41c637a1b4e6dbe3a5", size = 1077239 },
+    { url = "https://files.pythonhosted.org/packages/4b/d7/339cd0d216f5c4244dc157d52117ddc90ff054a607a12b6a4e766c667581/skypilot_nightly-1.0.0.dev20250130-py3-none-any.whl", hash = "sha256:c9d1ee1c1fa423da08c4f16a3959da3442cbb159dc51cd2117b9a7d2def3f032", size = 1098600 },
 ]
 
 [[package]]

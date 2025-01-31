@@ -1,20 +1,28 @@
-"""this default policy document is added to all VM roles"""
+"""default policy documents for VM roles"""
 
 
-def lmrunStatements(account_id: str, main_region: str):
-    """policy statements derived from specific LMRun requirements"""
+def read_main_node_params(account_id: str, main_region: str):
+    """policy statement to grant read-only access to cluster credentials"""
     return [
         {
             "Effect": "Allow",
             "Action": "ssm:GetParameter",
             "Resource": [
-                f"arn:aws:ssm:{main_region}:{account_id}:parameter/lmrun/*",
+                f"arn:aws:ssm:{main_region}:{account_id}:parameter/lmrun/main*",
             ],
         },
     ]
 
 
-def skypilotStatements(account_id: str, sky_ref: str):
+def ext_vm_document(account_id: str, main_region: str):
+    """limited IAM policy document for external VMs outside AWS"""
+    return {
+        "Version": "2012-10-17",
+        "Statement": read_main_node_params(account_id, main_region),
+    }
+
+
+def skypilot_statements(account_id: str, sky_ref: str):
     """policy statements derived from SkyPilot documentation"""
     return [
         {
@@ -68,6 +76,6 @@ def document(account_id: str, sky_ref: str, main_region: str):
     """default IAM policy document"""
     return {
         "Version": "2012-10-17",
-        "Statement": skypilotStatements(account_id, sky_ref)
-        + lmrunStatements(account_id, main_region),
+        "Statement": skypilot_statements(account_id, sky_ref)
+        + read_main_node_params(account_id, main_region),
     }

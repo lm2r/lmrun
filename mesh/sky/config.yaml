@@ -12,6 +12,7 @@ jobs:
 allowed_clouds:
   - aws
   - cloudflare
+  - lambda
   - paperspace
 
 aws:

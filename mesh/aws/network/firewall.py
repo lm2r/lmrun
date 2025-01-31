@@ -15,6 +15,9 @@ from aws.network.cidr_blocks import Allocation
 SSH_INGRESS = SecurityGroupIngressArgs(
     ip_protocol="tcp", cidr_ip="0.0.0.0/0", from_port=22, to_port=22
 )
+VPN_INGRESS = SecurityGroupIngressArgs(
+    ip_protocol="udp", cidr_ip="0.0.0.0/0", from_port=51820, to_port=51820
+)
 # reference the same name in all VM security groups for global SkyPilot config
 sky_ref = os.environ["LMRUN_SKY_REF"]
 
@@ -42,7 +45,7 @@ def main_vm_sg(
             for alloc in allocations
         ],
         # this property is required when creating a prefix list
-        max_entries=len(allocations),
+        max_entries=55,  # max max_entries 60 minus other ingress like SSH or VPN
         prefix_list_name="SatelliteBlocks",
         opts=opts,
     )
@@ -52,8 +55,16 @@ def main_vm_sg(
         group_description=f"SSH and satellite VPC inbound on {sky_ref} instances",
         security_group_ingress=[
             SSH_INGRESS,
+            VPN_INGRESS,
             SecurityGroupIngressArgs(
                 ip_protocol="-1", source_prefix_list_id=pl.prefix_list_id
+            ),
+            # K3s agents need access to 6443 on the server for:
+            # - initial registration, secured by K3s token
+            # - getting cluster CA certificates
+            # - Kubernetes API server communication, secured by kubeconfig certificate
+            SecurityGroupIngressArgs(
+                ip_protocol="tcp", cidr_ip="0.0.0.0/0", from_port=6443, to_port=6443
             ),
         ],
         vpc_id=vpc_id,
@@ -72,6 +83,7 @@ def satellite_vm_sg(
         group_description=f"SSH and main VPC inbound on {sky_ref} instances",
         security_group_ingress=[
             SSH_INGRESS,
+            VPN_INGRESS,
             SecurityGroupIngressArgs(ip_protocol="-1", cidr_ip=main_region_cidr),
         ],
         vpc_id=vpc_id,
