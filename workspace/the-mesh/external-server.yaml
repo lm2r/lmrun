@@ -1,10 +1,7 @@
-# see MESH ACCESS comment for tweak when running a VM on the mesh outside AWS 
-# + UDP port 51820 must be open for the VPN: 
-#     on Lambda, firewall settings are configured at an account level
 name: external-server
 
 resources:
-  accelerators: GH200
+  accelerators: A6000:2
   cloud: lambda
 
 envs:
@@ -14,23 +11,22 @@ envs:
   AWS_DEFAULT_REGION: us-east-1
 
 file_mounts:
-  # syncing local setup files: R2 bucket mount not supported on this new VM, yet
-  /r2/setup: ../../setup
-  # external MESH ACCESS
-  # by default, LMRun doesn't let SkyPilot share local AWS admin secrets with any VM
-  # outside AWS, we need to mount least privilege permissions created by the mesh stack
+  /r2:
+    source: r2://lmrun
   ~/.aws/credentials: ~/.aws/ext-vm-credentials
 
 setup: |
   set -e
-  install -m 755 /r2/setup/{k3s_*,vllm-conda-install.sh} .
+  install -m 755 /r2/setup/k3s_* .
   sudo -E ./k3s_agent.py --app-port 8000 --node-port 30300
-  ./vllm-conda-install.sh
+
+  python3 -m venv .venv
+  . .venv/bin/activate
+  pip install vllm hf-transfer
 
 # max-model-len & gpu-memory optimized for wide 32B model compatibility on 96GB
 run: |
-  conda activate vllm
-  model_name=`echo $SKYPILOT_CLUSTER_INFO | jq -r .cluster_name`
-  vllm serve --generation-config auto \
+  . .venv/bin/activate
+  vllm serve -tp 2 --generation-config auto \
       --max-model-len 31120 --gpu-memory-utilization 0.94 \
-      --served-model-name $model_name --revision $VERSION $MODEL
+      --served-model-name qwen-coder --revision $VERSION $MODEL

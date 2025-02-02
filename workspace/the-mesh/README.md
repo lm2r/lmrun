@@ -17,33 +17,38 @@ We first [connect](#service--client-vms) distributed workloads through the mesh 
 > Regional VPCs are only peered with the main region and peering connections are not transitive (VPC A and B are not connected when both peered with C). Therefore, to establish direct node connections within a global, yet private, AWS network, one of the 2 connected nodes must be in the main region. Outside AWS, nodes join the cluster through VPN tunnels attached to public IPs. Internally, communication works the same for all nodes: services expose special Kubernetes pod endpoints mapping to individual VMs. 
 
 ### Creating a service
-In the setup section of `model-server.yaml`, we append `--app-port 8000 --node-port 30300` to the cluster agent command `sudo -E ./k3s_agent.py` to map and expose a port as a VM service. While vLLM default port `8000` can remain the same across servers, node port must be in the range `30000-32767` and unique on the entire LMRun mesh.
+In the setup section of `vllm-server.yaml`, we append `--app-port 8000 --node-port 30300` to the cluster agent command `sudo -E ./k3s_agent.py` to map and expose a port as a VM service. While vLLM default port `8000` can remain the same across servers, node port must be in the range `30000-32767` and unique on the entire LMRun mesh.
 
-- Execute `./launch-32B.sh qwen-coder` to launch a default model on the K3s cluster. The script is a simple wrapper around `model-server.yaml`. To launch another model, you can override or edit default arguments, or use the CLI:
+- Execute the first command below to launch a default model on the K3s cluster: 
 ```bash
-sky launch model-server.yaml --env MODEL=NovaSky-AI/Sky-T1-32B-Preview \
+# launch a default model defined in the yaml task as a mesh service
+sky launch vllm-server.yaml -c qwen-coder
+# alternative command overriding default model arguments
+sky launch vllm-server.yaml --env MODEL=NovaSky-AI/Sky-T1-32B-Preview \
     --env VERSION=1e3f4c62a30c7ce70f4b3a3b952895d866943551 -c sky-t1
 ```
 
 ### Connecting to a service
 You only need to know the node port of a service to connect to it because its address is `localhost:<NODE PORT>`. The cluster routes traffic to the right host from this port.
 
-In the first example, the server address is `localhost:30300`. Clients reconstruct the vLLM server's API base `http://localhost:30300/v1` from it. Since OpenAI API specification requires a model name in inference requests, we add a `MODEL` variable. It's derived from SkyPilot server name (`-c` in `sky launch`) and set by `--served-model-name` in `vllm serve`. 
+In our example, the server address is `localhost:30300`. Clients refer to it to reconstruct the vLLM server's API base `http://localhost:30300/v1`. Since OpenAI API specification requires a model name in inference requests, we add a `MODEL` variable. It's derived from SkyPilot server name (`-c` in `sky launch`) and set by `--served-model-name` in `vllm serve` on the server. 
 ```bash
 sky launch -c client livebench-client.yaml --env SERVER=30300 --env MODEL=qwen-coder
 ```
 Take instances down once the task completed and displayed results: `sky down qwen-coder client`.
 
 ## Managed Spot Jobs
-*Prerequisite*: to spare an extra example VM, the next 2 sections require a new main node which includes a Phoenix server to trace LLM calls. Make sure that no node already exists with `sky status` and `sky down`. Then, start the main cluster node with `sky launch -c main main-phoenix.yaml` from `service` folder.
+*Prerequisite*: to spare an extra example VM, the next 2 sections require a new main node which includes a Phoenix server to trace LLM calls. Make sure that no node already exists with `sky status` and `sky down`. Then, start the main cluster node with `sky launch -c main main-phoenix.yaml` from `/service` folder.
 
 Cost-effective spot instances running above models can be terminated. SkyPilot jobs automatically handle recovery thanks to a managed controller VM. In earlier examples, we decoupled client and server on different VMs. This useful pattern can query several LLMs from a single workload or expose the model to several clients. In this example, we demonstrate the same task on a single VM to showcase..
 
 1. Stateful recovery when all processes are interrupted
 - Notice we added the `--resume` flag to `gen_api_answer.py` in the job definition: the process must be configured to automatically restart where it stopped
-- Launch with `./launch-32B.sh qwen-coder monolithic-job.yaml`: the script runs `sky jobs launch` instead of `sky launch` to turn a task into a managed job
+- Launch the default job with the first command below: we run `sky jobs launch` instead of `sky launch` to turn a task into a managed job
 ```bash
-# CLI command to launch a benchmarking job on any model fitting defined accelerators
+# launch the default job defined in the yaml task
+sky jobs launch monolithic-job.yaml -c qwen-coder
+# launch the benchmarking job on any model fitting defined accelerators
 sky jobs launch monolithic-job.yaml -c sky-t1 \
     --env MODEL=NovaSky-AI/Sky-T1-32B-Preview \
     --env VERSION=1e3f4c62a30c7ce70f4b3a3b952895d866943551
@@ -61,13 +66,26 @@ sky jobs launch monolithic-job.yaml -c sky-t1 \
 > Any MLOps platform running on a VM can connect to the mesh thanks to `k3s_agent.py` flags: `--app-port(s)` maps to exposed `--node-port(s)`. As a result, clients connect to servers across the global and private LMRun mesh through a `localhost:<NODE PORT>` URL.
 
 ## Multicloud Integration
-This example is a simple and common use case: we launch a model on an external GPU provider to interact with it from an existing environment on a hyperscaler.
+### Configuration
+1. UDP port `51820` must be open on the VM to connect to the LMRun mesh via VPN: 
+on Lambda Cloud, firewall settings are configured once at an account level.
+2. By default, LMRun doesn't let SkyPilot share local AWS secrets with any VM. Outside AWS, the task definition should mount least privilege permissions created by the mesh stack, as shown below.
 
-We'll deploy a model on Lambda and chat with it from Open WebUI, a user-friendly interface, hosted on an AWS instance. The LMRun mesh integrates both nodes seamlessly over a secure cluster network. Tokens and credentials are automatically managed for us.
+```yaml
+file_mounts:
+  ~/.aws/credentials: ~/.aws/ext-vm-credentials
+```
+
+### Example
+This example is a common use case: we launch a model on an external GPU provider to interact with it from an existing environment on a hyperscaler.
+
+We'll deploy a model on Lambda and chat with it from Open WebUI, a user-friendly interface, hosted on an AWS instance. The LMRun mesh integrates both nodes seamlessly over a secure cluster network.
 
 *Prerequisites*: 
-1. Follow SkyPilot [doc](https://docs.skypilot.co/en/latest/getting-started/installation.html#lambda-cloud) to set up your Lambda Cloud key.
-2. Go to Lambda firewall [settings](https://cloud.lambdalabs.com/firewall) and create a new inbound rule for the VPN connection: select "Custom UDP" type and enter port `51820`. Leaving default source `0.0.0.0/0` is safe (check out WireGuard VPN if you'd like to know more). 
-3. Start a new LMRun cluster from scratch. First, make sure that no node already exists with `sky status` and `sky down`. Then, start the main cluster node with `sky launch -c main main-webui.yaml` from `service` folder.
+- Follow SkyPilot [doc](https://docs.skypilot.co/en/latest/getting-started/installation.html#lambda-cloud) to set up your Lambda Cloud key.
+- Go to Lambda firewall [settings](https://cloud.lambdalabs.com/firewall) and create a new inbound rule for the VPN connection: select "Custom UDP" type and enter port `51820`. Leaving default source `0.0.0.0/0` is safe (check out WireGuard VPN if you'd like to know more). 
+- Start a new LMRun cluster from scratch. First, make sure that no node already exists with `sky status` and `sky down`. Then, start the main cluster node with `sky launch -c main main-webui.yaml` from `/service` folder.
 
-- Launch the model on Lambda Cloud: `sky launch -c qwen-coder external-server.yaml`
+1. Launch Qwen coder on Lambda Cloud: `sky launch -c qwen-coder external-server.yaml`
+2. Redirect Open WebUI port `ssh -L 8080:localhost:8080 main` and visit `localhost:8080` in your browser to add the model you just deployed: click on the top-right user icon > Admin Panel > Settings tab > Connections > + to add an "OpenAI API Connection" > enter `http://localhost:30300/v1` as URL, a random placeholder as key, and click Save. `30300` is defined by `--node-port` in `external-server.yaml`.
+3. Click on New Chat top-left to experience this AI environment over 2 clouds.

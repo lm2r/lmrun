@@ -6,10 +6,8 @@ resources:
   disk_size: 128
 
 envs:
-  # Hugging Face repo id 'namespace/repo_name'
-  MODEL:
-  # model version: commit hash from model repository
-  VERSION: 
+  MODEL: Qwen/Qwen2.5-Coder-32B-Instruct
+  VERSION: b47205940b83b5b484577359f71ee7b88472df67
   # vLLM serve CLI options passed in a single quoted string
   SERVE_OPTS: "-tp 4"
   # region where the main K3s server is hosted to retrieve cluster connection details
