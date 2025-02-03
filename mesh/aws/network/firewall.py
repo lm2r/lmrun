@@ -22,10 +22,10 @@ VPN_INGRESS = SecurityGroupIngressArgs(
 sky_ref = os.environ["LMRUN_SKY_REF"]
 
 
-def self_referencing_ingress(region: str, sg_id: Output, opts: ResourceOptions):
+def self_referencing_ingress(resource_name: str, sg_id: Output, opts: ResourceOptions):
     """allow VPC traffic for regional clusters with self-referencing ingress"""
     SecurityGroupIngress(
-        region + "_self",
+        resource_name + "_self",
         ip_protocol="-1",  # all protocols
         group_id=sg_id,
         source_security_group_id=sg_id,
@@ -49,9 +49,11 @@ def main_vm_sg(
         prefix_list_name="SatelliteBlocks",
         opts=opts,
     )
+    suffix = "-main"
+    resource_name = region + suffix  # differentiate from agent SG in the same region
     sg = SecurityGroup(
-        region,
-        group_name=sky_ref,
+        resource_name,
+        group_name=sky_ref + suffix,  # differentiate from agent SG name
         group_description=f"SSH and satellite VPC inbound on {sky_ref} instances",
         security_group_ingress=[
             SSH_INGRESS,
@@ -70,13 +72,13 @@ def main_vm_sg(
         vpc_id=vpc_id,
         opts=opts,
     )
-    self_referencing_ingress(region, sg.group_id, opts)
+    self_referencing_ingress(resource_name, sg.group_id, opts)
 
 
-def satellite_vm_sg(
+def agent_vm_sg(
     region: str, main_region_cidr: str, vpc_id: Output, opts: ResourceOptions
 ):
-    """SG in satellite regions and referenced by name in ~/.sky/config.yaml"""
+    """default LMRun SG for agent VMs, referenced by name in ~/.sky/config.yaml"""
     sg = SecurityGroup(
         region,
         group_name=sky_ref,

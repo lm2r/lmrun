@@ -6,13 +6,36 @@ import json
 from typing import Literal
 import secrets
 import string
-from socket import gethostbyname, gethostname
 import requests
-from k3s_command import run, service_config
+from k3s_command import (
+    K3S_VERSION,
+    run,
+    service_config,
+    apt_setup,
+    get_private_ip,
+    firewall_filter,
+)
 
-run(["apt-get", "update"])
-run(["apt-get", "install", "-y", "python3-boto3"])
+apt_setup()  # includes boto3 install
 import boto3  # noqa: E402
+
+firewall_filter(main_node=True)  # security first, dependent on apt_setup()
+
+# prevent public node port exposure: only allow cluster CIDR
+network_policy = """
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: lmrun
+spec:
+  podSelector: {}  # Empty podSelector matches all pods
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - ipBlock:
+            cidr: 10.42.0.0/16
+"""
 
 
 def generate_k3s_token(length=48):
@@ -52,7 +75,7 @@ def instance_metadata(slug: str = "public-ipv4"):
     return requests.get(metadata_url, headers=metadata_headers, timeout=2).text
 
 
-def connection_options():
+def connection_options() -> tuple[list[str], str]:
     """Set K3s command flags to connect agents"""
     opts = []
 
@@ -60,16 +83,15 @@ def connection_options():
     store_parameter(cluster_name + "/token", k3s_token, "SecureString", region)
     opts += ["--token=" + k3s_token]
 
-    private_ip = gethostbyname(gethostname())
+    private_ip = get_private_ip()
     store_parameter(cluster_name + "/ip/private", private_ip, "String", region)
-    opts += ["--advertise-address=" + private_ip]
 
     public_ip = instance_metadata(slug="public-ipv4")
     store_parameter(cluster_name + "/ip/public", public_ip, "String", region)
     # tls-san adds the public ip to kubeconfig certificate to run kubectl outside AWS
     opts += ["--node-external-ip=" + public_ip, "--tls-san=" + public_ip]
 
-    return opts
+    return opts, private_ip
 
 
 if __name__ == "__main__":
@@ -81,6 +103,7 @@ if __name__ == "__main__":
         "-sfL",
         "https://get.k3s.io",
         "|",
+        "INSTALL_K3S_VERSION=" + K3S_VERSION,
         "sh",
         "-s",
         "-",
@@ -92,9 +115,13 @@ if __name__ == "__main__":
         "--node-label=lmrun=" + cluster_name,
     ]
 
-    k3s_command += connection_options()
+    conn_opts, private_ip = connection_options()
+    k3s_command += conn_opts
     run(" ".join(k3s_command), shell=True)
-    service_config(cluster_name)  # host label is the cluster name on main node
+
+    # secure before service configuration
+    run(f'echo "{network_policy}" | kubectl apply -f -', shell=True)
+    service_config(cluster_name, private_ip)  # host label is cluster name on main node
 
     with open("/etc/rancher/k3s/k3s.yaml", "r", encoding="utf-8") as file:
         kubeconfig = file.read()

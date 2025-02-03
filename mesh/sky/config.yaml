@@ -13,6 +13,7 @@ allowed_clouds:
   - aws
   - cloudflare
   - lambda
+  - fluidstack
   - paperspace
 
 aws:
@@ -20,9 +21,10 @@ aws:
     config: lmrun
   vpc_name: lmrun
   security_group_name:
+    - "main*": lmrun-main
     - "*": lmrun
   # IAM instance profile selection by cluster name
   remote_identity:
-    - "main*": main
+    - "main*": lmrun-main
     - "*": lmrun
 

@@ -29,6 +29,32 @@ service_port_template = """
       nodePort: <NODE_PORT>
 """
 
+# for the reverse proxy to work, local network != cluster CIDR: 10.42.0.0/16
+configmap_template = """
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: <LABEL>
+  namespace: <NAMESPACE>
+  labels:
+    lmrun: <LABEL>
+data:
+  nginx.conf: |
+    events {}
+    http {
+        server {
+<LISTENERS>
+            location / {
+                proxy_pass http://<PRIVATE_IP>:\$server_port;
+                proxy_set_header Host \$host;
+                proxy_set_header X-Real-IP \$remote_addr;
+            }
+        }
+    }
+"""
+configmap_port_template = """
+            listen <APP_PORT>;
+"""
 statefulset_template = """
 apiVersion: apps/v1
 kind: StatefulSet
@@ -50,42 +76,54 @@ spec:
     spec:
       nodeSelector:
         lmrun: <LABEL>
-      hostNetwork: true
+      hostNetwork: false  # must be false to route node-to-node communication over VPN
       terminationGracePeriodSeconds: 0
+      volumes:
+      - name: config
+        configMap:
+          name: <LABEL>
       containers:
       - name: proxy
-        image: registry.k8s.io/pause:3.9  # first pod container (480KB) doing nothing
+        image: nginx:1.27.4-alpine-slim
+        volumeMounts:
+        - name: config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
         ports:
 """
 statefulset_port_template = """
         - containerPort: <APP_PORT>
-          hostPort: <APP_PORT>  # maps to service running on the VM
-          protocol: TCP
 """
 
 
 def build_manifest(
-    host_label: str, app_ports: list[str], node_ports: list[str], namespace: str
+    host_label: str,
+    private_ip: str,
+    app_ports: list[str],
+    node_ports: list[str],
+    namespace: str,
 ) -> str:
     """Render and combine Kubernetes object templates to return the final manifest"""
     assert len(app_ports) == len(node_ports), (
         f"Missing port to match app ({app_ports}) and node ({node_ports}) ports"
     )
 
-    namespace_manifest = namespace_template.replace("<NAMESPACE>", namespace)
-    svc_manifest = service_template.replace("<NAMESPACE>", namespace).replace(
-        "<LABEL>", host_label
-    )
-    sts_manifest = statefulset_template.replace("<NAMESPACE>", namespace).replace(
-        "<LABEL>", host_label
-    )
-
+    svc_manifest, sts_manifest = service_template, statefulset_template
+    nginx_listeners = ""
     for app_port, node_port in zip(app_ports, node_ports):
         svc_manifest += service_port_template.replace("<APP_PORT>", app_port).replace(
             "<NODE_PORT>", node_port
         )
         sts_manifest += statefulset_port_template.replace("<APP_PORT>", app_port)
+        nginx_listeners += configmap_port_template.replace("<APP_PORT>", app_port)
 
-    manifest = "---\n".join([namespace_manifest, svc_manifest, sts_manifest])
-    # remove all blank lines for clean logging and doctest
-    return manifest.replace("\n\n", "\n").strip()
+    manifest = (
+        "---\n".join(
+            [namespace_template, svc_manifest, configmap_template, sts_manifest]
+        )
+        .replace("<NAMESPACE>", namespace)
+        .replace("<LABEL>", host_label)
+        .replace("<LISTENERS>", nginx_listeners)
+        .replace("<PRIVATE_IP>", private_ip)
+    )
+    return manifest.replace("\n\n", "\n").strip()  # remove blank lines for doctest

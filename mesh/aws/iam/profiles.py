@@ -17,7 +17,7 @@ def default(account_id: str, sky_ref: str, main_region: str):
 
 def main(account_id: str, sky_ref: str, main_region: str):
     """profile for main cluster nodes: starting with 'main*' in sky/config.yaml"""
-    NAME = "main"
+    NAME = sky_ref + "-main"
     role = roles.main(account_id, sky_ref, NAME, main_region)
     aws_.iam.InstanceProfile(
         NAME,

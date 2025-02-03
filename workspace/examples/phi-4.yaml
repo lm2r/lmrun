@@ -1,0 +1,33 @@
+# sky launch -c phi-4 phi-4.yaml
+name: phi-4
+
+resources:
+  accelerators: ['A6000', 'L40', 'A100']
+
+envs:
+  MODEL: microsoft/phi-4
+  VERSION: 6fbb3d3bbe726c99b4188087b4deeec1bceac5ae
+  # override if already allocated on the LMRun mesh: e.g. --env NODE_PORT=30301
+  NODE_PORT: 30300
+  # region where the main K3s server is hosted to retrieve cluster connection details
+  AWS_DEFAULT_REGION: us-east-1
+
+file_mounts:
+  /r2:
+    source: r2://lmrun
+  # required outside AWS
+  ~/.aws/credentials: ~/.aws/ext-vm-credentials
+
+setup: |
+  set -e
+  install -m 755 /r2/setup/k3s_* .
+  sudo -E ./k3s_agent.py --app-port 8000 --node-port $NODE_PORT
+
+  python3 -m venv .venv
+  . .venv/bin/activate
+  pip install vllm hf-transfer
+
+run: |
+  . .venv/bin/activate
+  vllm serve --generation-config auto \
+      --served-model-name phi-4 --revision $VERSION $MODEL

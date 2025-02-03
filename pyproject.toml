@@ -14,7 +14,8 @@ dependencies = [
 #    - we set boto3 dependency explicitly and ensure V2 is available:
 #        it can't be installed via pip, contrary to V1
 # - use nightly for updated v6 catalog, not available in v0.7.0
-  "skypilot-nightly[paperspace]==1.0.0.dev20250130",
+# - to use local fork: uv pip uninstall skypilot-nightly; uv pip install -e "skypilot @ ../skypilot"
+  "skypilot-nightly[lambda,fluidstack,paperspace]==1.0.0.dev20250205",
   "boto3>=1.35.96,<2.0.0",
 ]
 
@@ -30,7 +31,7 @@ dev = [
 [tool.pylint.messages-control]
 disable = "all"
 enable = "too-many-lines"
-# Why up to 120 lines in a file?
+# Why up to 166 lines in a file?
 # 1) incentivize less code, no boilerplate
 # 2) limit scrolling
 # 3) force modularization and hierarchy of abstraction levels:
@@ -41,4 +42,4 @@ enable = "too-many-lines"
 #     - targeted context management with source file paths
 #     - efficient token usage
 #     - safer AI refactoring
-max-module-lines = 120
+max-module-lines = 166

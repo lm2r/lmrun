@@ -6,7 +6,7 @@ import pulumi_aws_native as aws_
 
 from aws.network.cidr_blocks import allocations
 from aws.region.zones import enabled_az_ids
-from aws.network.firewall import main_vm_sg, satellite_vm_sg
+from aws.network.firewall import main_vm_sg, agent_vm_sg
 from aws.network.peering import peer, main_private_interfaces
 
 
@@ -89,14 +89,15 @@ def cluster(main_region: str, regions: list[str]):
 
     # second loop to peer VPCs
     for alloc in selected_allocations:
+        agent_vm_sg(
+            alloc["region"],
+            # same in main region, still allow traffic not covered by SG self-reference
+            main_alloc["cidr_block"],
+            alloc["vpc"].vpc_id,
+            alloc["opt"],
+        )
         if alloc["region"] != main_region:
             peer(main_alloc, alloc, ref_tag)
-            satellite_vm_sg(
-                alloc["region"],
-                main_alloc["cidr_block"],
-                alloc["vpc"].vpc_id,
-                alloc["opt"],
-            )
         else:
             main_vm_sg(
                 main_region,
@@ -104,5 +105,5 @@ def cluster(main_region: str, regions: list[str]):
                 alloc["vpc"].vpc_id,
                 alloc["opt"],
             )
-            # private network interfaces to connect satellite VMs to fixed IPs
+            # private network interfaces to connect independent VMs to fixed IPs
             main_private_interfaces(main_alloc["subnets"])

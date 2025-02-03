@@ -67,8 +67,8 @@ sky jobs launch monolithic-job.yaml -c sky-t1 \
 
 ## Multicloud Integration
 ### Configuration
-1. UDP port `51820` must be open on the VM to connect to the LMRun mesh via VPN: 
-on Lambda Cloud, firewall settings are configured once at an account level.
+1. UDP port `51820` must be open on the VM to connect to the LMRun mesh via VPN. On Lambda Cloud, firewall settings are configured once at an account level. In other cases, this is handled by `k3_*` scripts. On AWS, security groups are already configured by the mesh.
+
 2. By default, LMRun doesn't let SkyPilot share local AWS secrets with any VM. Outside AWS, the task definition should mount least privilege permissions created by the mesh stack, as shown below.
 
 ```yaml
@@ -87,5 +87,19 @@ We'll deploy a model on Lambda and chat with it from Open WebUI, a user-friendly
 - Start a new LMRun cluster from scratch. First, make sure that no node already exists with `sky status` and `sky down`. Then, start the main cluster node with `sky launch -c main main-webui.yaml` from `/service` folder.
 
 1. Launch Qwen coder on Lambda Cloud: `sky launch -c qwen-coder external-server.yaml`
-2. Redirect Open WebUI port `ssh -L 8080:localhost:8080 main` and visit `localhost:8080` in your browser to add the model you just deployed: click on the top-right user icon > Admin Panel > Settings tab > Connections > + to add an "OpenAI API Connection" > enter `http://localhost:30300/v1` as URL, a random placeholder as key, and click Save. `30300` is defined by `--node-port` in `external-server.yaml`.
+
+2. Redirect Open WebUI port `ssh -L 8080:localhost:8080 main` and visit `localhost:8080/admin/settings` in your browser to add the model you just deployed: click on Connections > + to add an "OpenAI API Connection" > enter `http://localhost:30300/v1` as URL, a random placeholder as key, and click Save. (`30300` is defined by `--node-port` in `external-server.yaml`)
+
 3. Click on New Chat top-left to experience this AI environment over 2 clouds.
+
+### Troubleshooting Connectivity
+<details>
+
+1. Run `curl localhost:30300/v1/models` to reach the vLLM server from any node and get the list of models. It's useful to send traffic down the route to troubleshoot.
+
+2. Ssh to the external vLLM host; first, check basic connectivity on the UDP port `sudo tcpdump udp -n port 51820`: you should at least see keep alive pings roughly every 30 seconds. Compare IPs with the output of `kubectl get node -o wide` to validate the node-to-node VPN mesh. If you see both ingress and egress pings while traffic fails before reaching that port, this is a routing issue, e.g. when `hostNetwork` is activated on the K8s stateful set.
+
+3. When cluster traffic switches hosts, check exchanged packets through the VPN network interface with `sudo tcpdump -i flannel-wg`. On this interface, traffic should remain on the cluster CIDR `10.42.0.0/16`. Each host is assigned a `10.42.0.0/24` subnetwork, e.g. you should see node-to-node communication from `10.42.0.x` to `10.42.1.x` or vice-versa, if there have only been 2 nodes registered with this cluster so far. The subnet of a third node would typically show up as `10.42.2.x`.
+
+4. If you need to troubleshoot further: `sudo tcpdump -i any -n port 8000` shows traffic for vLLM across network interfaces. From this output, you should be able to pinpoint where the connection is dropped.
+</details>

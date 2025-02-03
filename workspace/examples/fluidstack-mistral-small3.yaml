@@ -1,0 +1,40 @@
+# 1. visit huggingface.co/mistralai/Mistral-Small-24B-Instruct-2501 to gain access 
+# 2. export your HF_TOKEN: `export HF_TOKEN=<YOUR HUGGING FACE TOKEN>`
+# 3. sky launch -c mistral-s-3 --env HF_TOKEN fluidstack-mistral-small3.yaml
+name: fluidstack-mistral-small3
+
+resources:
+  accelerators: ['A100-80GB', 'H100']
+  cloud: fluidstack
+
+envs:
+  MODEL: mistralai/Mistral-Small-24B-Instruct-2501
+  VERSION: 20b2ed1c4e9af44b9ad125f79f713301e27737e2
+  # override if already allocated on the LMRun mesh: e.g. --env NODE_PORT=30301
+  NODE_PORT: 30300
+  # region where the main K3s server is hosted to retrieve cluster connection details
+  AWS_DEFAULT_REGION: us-east-1
+  # required for gated model
+  HF_TOKEN:
+
+file_mounts:
+  /r2:
+    source: r2://lmrun
+  # required outside AWS
+  ~/.aws/credentials: ~/.aws/ext-vm-credentials
+
+setup: |
+  set -e
+  install -m 755 /r2/setup/k3s_* .
+  sudo -E ./k3s_agent.py --app-port 8000 --node-port $NODE_PORT
+
+  python3 -m venv .venv
+  . .venv/bin/activate
+  pip install vllm hf-transfer mistral_common
+
+run: |
+  . .venv/bin/activate
+  vllm serve --generation-config auto \
+      --tokenizer_mode mistral --config_format mistral --load_format mistral \
+      --tool-call-parser mistral --enable-auto-tool-choice \
+      --served-model-name mistral-s-3 --revision $VERSION $MODEL
