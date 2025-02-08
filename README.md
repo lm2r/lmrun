@@ -1,7 +1,7 @@
 # LMRun
 
 AI workload platform as a SkyPilot distribution incl. cloud infra, networking & services
-- Turn your cloud accounts into an AI platform
+- Turn your cloud accounts into an integrated AI platform
 - Ensure the cheap availability of AI accelerators with a seamless DX
 
 [SkyPilot](https://github.com/skypilot-org/skypilot) made these *features* possible
