@@ -1,16 +1,19 @@
 # LMRun
 
-AI workload platform as a SkyPilot distribution incl. cloud infra, networking & services
-- Turn your cloud accounts into an integrated AI platform
-- Ensure the cheap availability of AI accelerators with a seamless DX
+Multi-cloud AI environment built on [SkyPilot](https://github.com/skypilot-org/skypilot)
 
-[SkyPilot](https://github.com/skypilot-org/skypilot) made these *features* possible
-- Global network of multiple clouds for better availability and cheaper compute
+- Turns multiple cloud accounts into an integrated AI platform
+- Provides on-demand GPUs with a seamless DX through SkyPilot
+
+> E.g. LMRun connects isolated clusters and MLOps servers in one bootstrap command
+
+LMRun is a distribution: it has already made infrastructure choices to include a cloud setup, networking and services, that run below, across and on top of SkyPilot. 
+
+*features*
+- Global VPN network of GPUs for secure availability and cheaper compute
 - Open stack: work with any tool or framework on cloud-agnostic infrastructure
 - No data lock-in: free or low-cost egress bandwidth for high throughput
-- Expand hyperscaler accounts (AWS) to outsource AI compute
-
-> LMRun integrates SkyPilot clusters and multiple clouds into a single environment.
+- Hyperscaler (AWS) extension to outsource AI compute
 
 ## Quickstart
 1. Set up your [local environment](#local-environment)
